@@ -7,6 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        /* Modern Table Enhancements */
+        table { border-spacing: 0; width: 100%; }
+        th { background-color: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; border-bottom: 2px solid #e2e8f0; }
+        td { border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 13px; }
+        tbody tr { transition: background-color 0.15s ease-in-out; }
+        tbody tr:hover { background-color: #f8fafc; }
         .page-btn {
             padding: 6px 12px; border: 1px solid #d1d5db; background: linear-gradient(to bottom, #ffffff 0%, #f3f4f6 100%);
             color: #374151; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
@@ -29,7 +35,6 @@
         </a>
     </nav>
 
-    <!-- Edge-to-Edge Container -->
     <div class="w-full space-y-6 mt-4">
 
         <!-- SECTION 1: TEST NUMBERS -->
@@ -65,16 +70,16 @@
                     </div>
                 </div>
 
-                <div class="table-container border-y sm:border border-gray-300">
+                <div class="table-container border sm:border border-gray-300 rounded-sm shadow-sm">
                     <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
-                        <thead class="bg-gray-100 border-b border-gray-300">
+                        <thead>
                             <tr>
-                                <th class="p-3 font-semibold text-gray-700 border-r border-gray-200">Range ↕</th>
-                                <th class="p-3 font-semibold text-gray-700 border-r border-gray-200">Prefix ↕</th>
-                                <th class="p-3 font-semibold text-gray-700">Test Number ↕</th>
+                                <th class="p-3 border-r border-gray-200">Range ↕</th>
+                                <th class="p-3 border-r border-gray-200">Prefix ↕</th>
+                                <th class="p-3">Test Number ↕</th>
                             </tr>
                         </thead>
-                        <tbody id="testNumbersTableBody" class="divide-y divide-gray-200"></tbody>
+                        <tbody id="testNumbersTableBody"></tbody>
                     </table>
                 </div>
 
@@ -93,7 +98,7 @@
                 <div class="flex items-center space-x-3">
                     <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Recent Inbound</h2>
                     <div id="loadingOtp" class="loader hidden"></div>
-                    <div id="otpTotalBadge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded border border-cyan-300 shadow-sm">Total OTPs: 0</div>
+                    <div id="otpTotalBadge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded border border-cyan-300 shadow-sm">Total Inbounds: 0</div>
                 </div>
                 <button onclick="handleRefresh()" class="bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1.5 rounded text-sm font-bold transition flex items-center space-x-1.5 shadow-sm">
                     <svg id="refreshIcon" class="w-4 h-4 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -105,7 +110,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                     <div class="flex items-center space-x-2 w-full sm:w-auto">
                         <label class="font-semibold text-gray-700 text-sm">Search:</label>
-                        <input type="text" id="otpSearchInput" placeholder="Range, number, OTP..." class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-64 focus:outline-none focus:border-cyan-500 shadow-sm">
+                        <input type="text" id="otpSearchInput" placeholder="Range, number, or service..." class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-64 focus:outline-none focus:border-cyan-500 shadow-sm">
                     </div>
                     <div class="flex items-center space-x-2 w-full sm:w-auto">
                         <label class="font-semibold text-gray-700 text-sm">Range:</label>
@@ -124,17 +129,17 @@
                     </div>
                 </div>
 
-                <div class="table-container border-y sm:border border-gray-300">
+                <div class="table-container border sm:border border-gray-300 rounded-sm shadow-sm">
                     <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
-                        <thead class="bg-gray-100 border-b border-gray-300">
+                        <thead>
                             <tr>
-                                <th class="p-3 font-semibold text-gray-700 border-r border-gray-200">Date ↕</th>
-                                <th class="p-3 font-semibold text-gray-700 border-r border-gray-200">Range ↕</th>
-                                <th class="p-3 font-semibold text-gray-700 border-r border-gray-200">Number ↕</th>
-                                <th class="p-3 font-semibold text-gray-700">CLI ↕</th>
+                                <th class="p-3 border-r border-gray-200">Date ↕</th>
+                                <th class="p-3 border-r border-gray-200">Range ↕</th>
+                                <th class="p-3 border-r border-gray-200">Number ↕</th>
+                                <th class="p-3">Service (CLI) ↕</th>
                             </tr>
                         </thead>
-                        <tbody id="inboundTableBody" class="divide-y divide-gray-200"></tbody>
+                        <tbody id="inboundTableBody"></tbody>
                     </table>
                 </div>
 
@@ -155,7 +160,6 @@
     </div>
 
     <script>
-        // Supabase Configuration
         const SUPABASE_URL = 'https://bnkfvvnuhiaxaiyamttp.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJua2Z2dm51aGlheGFpeWFtdHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NzY1MzEsImV4cCI6MjEwNDM1MjUzMX0.1LkkhnBbpaQiT_dx7Hfnpffo1Bnbey_TOednu7e-MMQ';
         
@@ -184,22 +188,42 @@
             document.getElementById('otpLimit').addEventListener('change', () => { otpCurrentPage = 1; renderInbounds(); });
         });
 
+        async function fetchAllRows(tableName, queryParams = '') {
+            let allData = [];
+            let limit = 1000;
+            let offset = 0;
+            let fetching = true;
+
+            while (fetching) {
+                const separator = queryParams ? '&' : '';
+                const url = `${SUPABASE_URL}/rest/v1/${tableName}?${queryParams}${separator}limit=${limit}&offset=${offset}`;
+                const res = await fetch(url, { headers });
+                if (!res.ok) break;
+                const data = await res.json();
+                allData = allData.concat(data);
+                if (data.length < limit) {
+                    fetching = false;
+                } else {
+                    offset += limit;
+                }
+            }
+            return allData;
+        }
+
         async function loadDataFromDatabase() {
             document.getElementById('loadingNum').classList.remove('hidden');
             document.getElementById('loadingOtp').classList.remove('hidden');
 
             try {
-                const numRes = await fetch(`${SUPABASE_URL}/rest/v1/web_numbers?select=*`, { headers });
-                if(numRes.ok) adminUploadedNumbers = await numRes.json();
-
-                const otpRes = await fetch(`${SUPABASE_URL}/rest/v1/web_otps?select=*&order=date.desc`, { headers });
-                if(otpRes.ok) receivedOTPs = await otpRes.json();
+                adminUploadedNumbers = await fetchAllRows('web_numbers', 'select=*');
+                receivedOTPs = await fetchAllRows('web_otps', 'select=*&order=date.desc');
 
                 populateRangeDropdowns();
                 renderNumbers();
                 renderInbounds();
                 showToast("Live database synchronized.");
             } catch (error) {
+                console.error("Database error:", error);
                 showToast("Failed to fetch data from database.", false);
             }
 
@@ -210,11 +234,11 @@
         function populateRangeDropdowns() {
             const numDropdown = document.getElementById('numRangeFilter');
             numDropdown.innerHTML = '<option value="All">-- Show All Ranges --</option>';
-            [...new Set(adminUploadedNumbers.map(i => i.range))].forEach(r => numDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${r}</option>`));
+            [...new Set(adminUploadedNumbers.map(i => i.range))].sort().forEach(r => numDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${r}</option>`));
 
             const otpDropdown = document.getElementById('otpRangeFilter');
             otpDropdown.innerHTML = '<option value="All">-- Show All Ranges --</option>';
-            [...new Set(receivedOTPs.map(i => i.range))].forEach(r => otpDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${r}</option>`));
+            [...new Set(receivedOTPs.map(i => i.range))].sort().forEach(r => otpDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${r}</option>`));
         }
 
         function renderNumbers() {
@@ -246,12 +270,10 @@
             const startIndex = (numCurrentPage - 1) * limit;
             const paginatedData = filteredData.slice(startIndex, startIndex + limit);
 
-            // Copy Icon SVG
             const copySvg = `<svg class="w-4 h-4 ml-1.5 text-gray-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`;
 
             paginatedData.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 transition";
                 tr.innerHTML = `
                     <td class="p-3 text-gray-700 border-r border-gray-200">${row.range}</td>
                     <td class="p-3 text-gray-700 border-r border-gray-200">${row.prefix}</td>
@@ -281,11 +303,11 @@
 
             const filteredData = receivedOTPs.filter(item => {
                 const matchesRange = filterRange === 'All' || item.range === filterRange;
-                const matchesSearch = searchText === '' || (item.range && item.range.toLowerCase().includes(searchText)) || (item.number && item.number.toLowerCase().includes(searchText)) || (item.otpMessage && item.otpMessage.toLowerCase().includes(searchText));
+                const matchesSearch = searchText === '' || (item.range && item.range.toLowerCase().includes(searchText)) || (item.number && item.number.toLowerCase().includes(searchText)) || (item.cli && item.cli.toLowerCase().includes(searchText));
                 return matchesRange && matchesSearch;
             });
 
-            document.getElementById('otpTotalBadge').textContent = `Total OTPs: ${filteredData.length}`;
+            document.getElementById('otpTotalBadge').textContent = `Total Inbounds: ${filteredData.length}`;
 
             if(filteredData.length === 0 || limit === 0) {
                 if (filteredData.length === 0) tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500 font-medium">0 Records Found</td></tr>`;
@@ -303,14 +325,13 @@
 
             paginatedData.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 transition";
-                const msg = row.otpMessage || "";
-                const maskedOtp = msg.length > 3 ? msg.substring(0, 3) + 'XXXX' : msg + 'XXXX';
+                const cliName = row.cli || row.service || 'System Alert';
+                
                 tr.innerHTML = `
-                    <td class="p-3 text-gray-600 border-r border-gray-200">${row.date}</td>
-                    <td class="p-3 text-gray-700 border-r border-gray-200">${row.range ? row.range.split(' ')[0] : ''} <br><span class="text-xs text-gray-400">${row.range}</span></td>
-                    <td class="p-3 font-bold text-gray-900 border-r border-gray-200">${row.number}</td>
-                    <td class="p-3 text-gray-700 font-mono">${maskedOtp}</td>
+                    <td class="p-3 text-gray-600 border-r border-gray-200">${row.date || 'N/A'}</td>
+                    <td class="p-3 text-gray-700 border-r border-gray-200">${row.range ? row.range.split(' ')[0] : 'Unknown'} <br><span class="text-xs text-gray-400">${row.range || ''}</span></td>
+                    <td class="p-3 font-bold text-gray-900 border-r border-gray-200">${row.number || 'N/A'}</td>
+                    <td class="p-3 font-semibold text-gray-900 uppercase">${cliName}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -350,7 +371,6 @@
             }, 500);
         }
 
-        // Updated Copy logic to show Green Checkmark for 3 seconds
         function copyToClipboard(element, text) {
             navigator.clipboard.writeText(text).then(() => {
                 const iconContainer = element.querySelector('.icon-container');
@@ -360,14 +380,12 @@
                     const originalSvg = iconContainer.getAttribute('data-original');
                     const checkSvg = `<svg class="w-4 h-4 ml-1.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
                     
-                    // Switch to checkmark and turn number green
                     iconContainer.innerHTML = checkSvg;
-                    numText.classList.add('text-green-500');
+                    numText.style.color = '#10b981';
                     
-                    // Reset after 3 seconds
                     setTimeout(() => { 
                         iconContainer.innerHTML = originalSvg;
-                        numText.classList.remove('text-green-500');
+                        numText.style.color = '';
                     }, 3000);
                 }
             }).catch(err => { console.error('Failed to copy: ', err); });
