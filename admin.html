@@ -26,23 +26,28 @@
         <!-- ADMIN: UPLOAD SECTION -->
         <div class="bg-white shadow-md rounded border border-gray-300 overflow-hidden">
             <div class="bg-gray-100 border-b border-gray-300 px-4 py-3">
-                <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Upload New Range (.txt)</h2>
+                <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Upload New Range (.txt/.csv)</h2>
             </div>
             <div class="p-6">
+                <p class="text-sm text-gray-600 mb-4">Upload standard TXT or CSV files. The system will automatically separate numbers by their <strong>Range</strong> column if available. If no Range column is found, it uses the filename.</p>
                 <div class="flex items-center space-x-4 mb-4">
-                    <input type="file" id="fileInput" accept=".txt" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 border border-gray-300 rounded cursor-pointer">
+                    <input type="file" id="fileInput" accept=".txt,.csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 border border-gray-300 rounded cursor-pointer">
                     <button onclick="processUpload()" class="bg-gray-800 hover:bg-black text-white px-6 py-2 rounded text-sm font-bold transition shadow-sm whitespace-nowrap">
                         Read File
                     </button>
                 </div>
 
                 <div id="uploadConfirmBox" class="hidden-view bg-yellow-50 border border-yellow-200 p-4 rounded-md">
-                    <h3 class="font-bold text-yellow-800 mb-2">Confirm Upload Details:</h3>
-                    <ul class="text-sm text-yellow-700 space-y-1 mb-4">
-                        <li><strong>Detected Range Name:</strong> <span id="confirmRangeName"></span></li>
-                        <li><strong>Valid Numbers Parsed:</strong> <span id="confirmValidCount"></span></li>
-                    </ul>
-                    <div class="flex space-x-3">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-yellow-800">Confirm Upload Details:</h3>
+                        <span class="bg-yellow-200 text-yellow-900 text-xs font-bold px-2 py-1 rounded">Total Parsed: <span id="confirmValidCount">0</span></span>
+                    </div>
+                    
+                    <p class="text-xs text-yellow-700 mb-2">The following ranges were detected. You can edit the range names before uploading:</p>
+                    
+                    <ul id="confirmRangeList" class="space-y-2 mb-4 max-h-48 overflow-y-auto"></ul>
+
+                    <div class="flex space-x-3 border-t border-yellow-200 pt-3">
                         <button onclick="finalizeUpload()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-bold shadow-sm transition">Upload to Database</button>
                         <button onclick="cancelUpload()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded text-sm font-bold transition">Cancel</button>
                     </div>
@@ -81,15 +86,18 @@
                 </div>
                 <div class="p-6 space-y-4">
                     
-                    <p class="text-sm text-gray-600 mb-4">Click below to securely fetch and sync OTP messages from the Lamix API directly to the database. The API token and Cloudflare Proxy are securely embedded in the code.</p>
+                    <div class="bg-indigo-50 border-l-4 border-indigo-500 p-3 mb-4 text-sm text-indigo-700 shadow-sm">
+                        <strong class="block mb-1">🔄 Auto-Sync Active</strong>
+                        The system automatically fetches and syncs OTPs every 1 minute in the background. It will <strong>only</strong> save OTPs for numbers that exist in your Database.
+                    </div>
                     
-                    <button onclick="syncOtpsFromApi()" id="apiSyncBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded text-sm font-bold transition flex items-center justify-center space-x-2 shadow-sm">
+                    <button onclick="syncOtpsFromApi(false)" id="apiSyncBtn" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded text-sm font-bold transition flex items-center justify-center space-x-2 shadow-sm">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                        <span>Fetch & Sync OTPs from Lamix</span>
+                        <span>Force Manual Sync Now</span>
                     </button>
                     
                     <!-- Status message container -->
-                    <div id="apiSyncStatus" class="hidden-view text-sm font-semibold text-center mt-2 p-3 rounded"></div>
+                    <div id="apiSyncStatus" class="text-sm font-semibold text-center mt-2 p-3 rounded text-gray-500">Waiting for first sync...</div>
                 </div>
             </div>
         </div>
@@ -103,12 +111,11 @@
 
     <script>
         // =====================================================================
-        // CONFIGURATION 
+        // CONFIGURATION
         // =====================================================================
-        // Your exact API token
         const LAMIX_API_TOKEN = 'D463wOy8iV8JLsesSz12G-rp1XXKAwlB3mvVWZeWNL0'; 
+        const PRIVATE_PROXY_URL = 'https://lamix-proxy.ahmedalirutf.workers.dev';
 
-        // Supabase Configuration
         const SUPABASE_URL = 'https://bnkfvvnuhiaxaiyamttp.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJua2Z2dm51aGlheGFpeWFtdHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NzY1MzEsImV4cCI6MjEwNDM1MjUzMX0.1LkkhnBbpaQiT_dx7Hfnpffo1Bnbey_TOednu7e-MMQ';
         
@@ -121,20 +128,28 @@
 
         let adminUploadedNumbers = [];
         let tempParsedData = []; 
-        let tempRangeName = "";
         let toastTimeout;
 
         document.addEventListener('DOMContentLoaded', () => {
-            fetchAdminRanges();
+            fetchAdminRanges().then(() => {
+                // Initial Sync a few seconds after the page loads
+                setTimeout(() => syncOtpsFromApi(true), 2000);
+            });
+            
+            // Auto Sync every 60 seconds
+            setInterval(() => {
+                syncOtpsFromApi(true);
+            }, 60000); 
         });
 
+        // Modifed to select range AND number, so we can filter OTPs later
         async function fetchAdminRanges() {
             document.getElementById('loadingRanges').classList.remove('hidden');
             try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/web_numbers?select=range`, { headers });
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/web_numbers?select=range,number`, { headers });
                 if(res.ok) {
-                    const data = await res.json();
-                    renderAdminRanges(data);
+                    adminUploadedNumbers = await res.json();
+                    renderAdminRanges(adminUploadedNumbers);
                 }
             } catch (error) {
                 showToast("Failed to fetch database ranges.", false);
@@ -142,23 +157,28 @@
             document.getElementById('loadingRanges').classList.add('hidden');
         }
 
+        // =====================================================================
+        // ADVANCED FILE PARSER & EDIT UI
+        // =====================================================================
         function processUpload() {
             const fileInput = document.getElementById('fileInput');
             if (fileInput.files.length === 0) {
-                showToast("Please select a .txt file first.", false);
+                showToast("Please select a .txt or .csv file first.", false);
                 return;
             }
 
             const file = fileInput.files[0];
-            tempRangeName = file.name.replace(/\.[^/.]+$/, ""); 
+            const defaultRangeName = file.name.replace(/\.[^/.]+$/, ""); 
 
             const reader = new FileReader();
             reader.onload = function(e) {
                 const lines = e.target.result.split(/\r?\n/);
                 tempParsedData = [];
+                
+                let colRange = -1, colPrefix = -1, colNumber = -1;
                 let isHeader = true;
 
-                lines.forEach(line => {
+                lines.forEach((line, index) => {
                     const trimmedLine = line.trim();
                     if (!trimmedLine) return; 
                     
@@ -167,18 +187,37 @@
 
                     if (isHeader) {
                         isHeader = false;
-                        if (trimmedLine.toLowerCase().includes('prefix') || trimmedLine.toLowerCase().includes('number')) return; 
+                        const lowerLine = trimmedLine.toLowerCase();
+                        if (lowerLine.includes('prefix') || lowerLine.includes('number')) {
+                            const headersArray = parts.map(h => h.toLowerCase().trim());
+                            colRange = headersArray.indexOf('range');
+                            colPrefix = headersArray.indexOf('prefix');
+                            colNumber = headersArray.indexOf('number');
+                            return; 
+                        }
                     }
 
-                    let prefix = "", number = "";
-                    if (parts.length >= 3) {
-                        prefix = parts[1].trim(); number = parts[2].trim();
-                    } else if (parts.length === 2) {
-                        prefix = parts[0].trim(); number = parts[1].trim();
+                    let range = defaultRangeName;
+                    let prefix = "";
+                    let number = "";
+
+                    if (colPrefix !== -1 && colNumber !== -1) {
+                        if (colRange !== -1 && parts[colRange]) range = parts[colRange].trim();
+                        prefix = parts[colPrefix] ? parts[colPrefix].trim() : "";
+                        number = parts[colNumber] ? parts[colNumber].trim() : "";
+                    } 
+                    else if (parts.length >= 3 && !trimmedLine.toLowerCase().includes('prefix')) {
+                        range = parts[0].trim();
+                        prefix = parts[1].trim();
+                        number = parts[2].trim();
+                    } 
+                    else if (parts.length === 2 && !trimmedLine.toLowerCase().includes('prefix')) {
+                        prefix = parts[0].trim();
+                        number = parts[1].trim();
                     }
 
                     if (prefix && number && /^\d+$/.test(prefix) && /^\d+$/.test(number)) {
-                        tempParsedData.push({ range: tempRangeName, prefix: prefix, number: number });
+                        tempParsedData.push({ range: range, prefix: prefix, number: number });
                     }
                 });
 
@@ -187,12 +226,47 @@
                     return;
                 }
 
-                document.getElementById('confirmRangeName').textContent = tempRangeName;
-                document.getElementById('confirmValidCount').textContent = tempParsedData.length;
-                document.getElementById('uploadConfirmBox').classList.remove('hidden-view');
+                renderConfirmBox();
             };
             reader.readAsText(file);
         }
+
+        function renderConfirmBox() {
+            const confirmList = document.getElementById('confirmRangeList');
+            confirmList.innerHTML = '';
+            
+            const rangeGroups = {};
+            tempParsedData.forEach(item => {
+                rangeGroups[item.range] = (rangeGroups[item.range] || 0) + 1;
+            });
+
+            for (const [rName, count] of Object.entries(rangeGroups)) {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center bg-white px-3 py-2 rounded shadow-sm border border-yellow-200";
+                li.innerHTML = `
+                    <div>
+                        <span class="font-bold text-gray-800">${rName}</span>
+                        <span class="text-xs text-gray-500 ml-2">(${count} numbers)</span>
+                    </div>
+                    <button onclick="editTempRange('${rName.replace(/'/g, "\\'")}')" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-bold px-3 py-1 rounded transition">Edit Range Name</button>
+                `;
+                confirmList.appendChild(li);
+            }
+
+            document.getElementById('confirmValidCount').textContent = tempParsedData.length;
+            document.getElementById('uploadConfirmBox').classList.remove('hidden-view');
+        }
+
+        window.editTempRange = function(oldName) {
+            const newName = prompt(`Enter a new range name to replace "${oldName}":`, oldName);
+            if (newName && newName.trim() !== "" && newName !== oldName) {
+                const cleanName = newName.trim();
+                tempParsedData.forEach(item => {
+                    if (item.range === oldName) item.range = cleanName;
+                });
+                renderConfirmBox(); 
+            }
+        };
 
         async function finalizeUpload() {
             if (tempParsedData.length > 0) {
@@ -221,7 +295,6 @@
 
         function cancelUpload() {
             tempParsedData = [];
-            tempRangeName = "";
             document.getElementById('uploadConfirmBox').classList.add('hidden-view');
         }
 
@@ -245,7 +318,7 @@
                     <td class="p-3 text-gray-700 font-bold border-r border-gray-200">${rangeName}</td>
                     <td class="p-3 text-gray-700 border-r border-gray-200">${rangesCount[rangeName]} numbers</td>
                     <td class="p-3 text-center">
-                        <button onclick="deleteRange('${rangeName}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold shadow-sm">Delete Database</button>
+                        <button onclick="deleteRange('${rangeName.replace(/'/g, "\\'")}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold shadow-sm">Delete Database</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -253,7 +326,7 @@
         }
 
         async function deleteRange(rangeName) {
-            if(confirm(`Are you sure you want to delete "${rangeName}" from the database?`)) {
+            if(confirm(`Are you sure you want to delete ALL numbers in "${rangeName}"?`)) {
                 showToast("Deleting...", true);
                 try {
                     await fetch(`${SUPABASE_URL}/rest/v1/web_numbers?range=eq.${encodeURIComponent(rangeName)}`, { method: 'DELETE', headers });
@@ -267,47 +340,47 @@
         }
 
         // =========================================================
-        // PRIVATE CLOUDFLARE WORKER SYNC 
+        // PRIVATE CLOUDFLARE WORKER SYNC & DB FILTERING
         // =========================================================
-        async function syncOtpsFromApi() {
+        async function syncOtpsFromApi(isAuto = false) {
             const btn = document.getElementById('apiSyncBtn');
             const status = document.getElementById('apiSyncStatus');
             
-            btn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> <span>Syncing from Lamix API...</span>`;
-            btn.disabled = true;
-            status.classList.add('hidden-view');
+            if (!isAuto) {
+                btn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> <span>Syncing...</span>`;
+                btn.disabled = true;
+                status.classList.add('hidden-view');
+            } else {
+                status.innerHTML = `<span class="text-indigo-500">🔄 Auto-syncing in background...</span>`;
+                status.className = "text-sm font-semibold text-center mt-2 p-3 rounded block";
+            }
 
             try {
-                // 1. The original Lamix URL
+                // 1. Fetch from Lamix API using Proxy
                 const targetUrl = `https://panel.lamix.org/api/v1/messages?limit=1000&token=${LAMIX_API_TOKEN}`;
-                
-                // 2. YOUR CLOUDFLARE WORKER URL 
-                const myCloudflareProxy = `https://lamix-proxy.ahmedalirutf.workers.dev`;
-                
-                // Route the request through your private worker
-                const proxyUrl = `${myCloudflareProxy}/?url=${encodeURIComponent(targetUrl)}`;
+                const proxyUrl = `${PRIVATE_PROXY_URL}/?url=${encodeURIComponent(targetUrl)}`;
                 
                 const lamixRes = await fetch(proxyUrl);
-
-                if (!lamixRes.ok) {
-                    throw new Error(`Lamix Server Error (HTTP ${lamixRes.status}). Check your token.`);
-                }
+                if (!lamixRes.ok) throw new Error(`Lamix Server Error (HTTP ${lamixRes.status}).`);
                 
                 const lamixData = await lamixRes.json();
-                
-                if (lamixData.error) {
-                    throw new Error(`Lamix Error: ${lamixData.error}`);
-                }
+                if (lamixData.error) throw new Error(`Lamix Error: ${lamixData.error}`);
 
                 const records = lamixData.records || []; 
 
-                const otpsToInsert = records.map(msg => ({
-                    date: msg.time.replace('T', ' ').substring(0, 19), 
-                    range: msg.range || 'Unknown Range',
-                    number: msg.number,
-                    otpMessage: msg.content
-                }));
+                // 2. FILTERING LOGIC: Only allow OTPs that map to numbers currently in Supabase
+                const validNumbersSet = new Set(adminUploadedNumbers.map(n => n.number));
 
+                const otpsToInsert = records
+                    .filter(msg => validNumbersSet.has(msg.number)) // Strict filter
+                    .map(msg => ({
+                        date: msg.time.replace('T', ' ').substring(0, 19), 
+                        range: msg.range || 'Unknown Range',
+                        number: msg.number,
+                        otpMessage: msg.content
+                    }));
+
+                // 3. Upload to Database
                 if (otpsToInsert.length > 0) {
                     await fetch(`${SUPABASE_URL}/rest/v1/web_otps?number=neq.null`, { method: 'DELETE', headers });
                     
@@ -320,19 +393,23 @@
                     if (!insertRes.ok) throw new Error("Failed to write to Supabase database.");
                 }
 
-                status.innerHTML = `<strong>Success!</strong> Synced ${otpsToInsert.length} messages to Database.`;
+                const timeNow = new Date().toLocaleTimeString();
+                status.innerHTML = `<strong>Success!</strong> Synced ${otpsToInsert.length} messages. <br><span class="text-xs text-gray-500 font-normal">Last updated: ${timeNow}</span>`;
                 status.classList.remove('hidden-view');
                 status.className = "text-sm font-semibold text-green-700 bg-green-50 border border-green-200 p-3 rounded mt-4 block";
 
             } catch (err) {
                 console.error("API Fetch Error:", err);
-                status.innerHTML = `<strong>Sync Failed:</strong><br><span class="text-xs text-red-600">${err.message}</span>`;
+                const timeNow = new Date().toLocaleTimeString();
+                status.innerHTML = `<strong>Sync Failed:</strong><br><span class="text-xs text-red-600">${err.message}</span><br><span class="text-xs text-gray-500 font-normal">Last attempt: ${timeNow}</span>`;
                 status.classList.remove('hidden-view');
                 status.className = "text-sm font-semibold text-red-700 bg-red-50 border border-red-200 p-3 rounded mt-4 block";
             }
 
-            btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> <span>Fetch & Sync OTPs from Lamix</span>`;
-            btn.disabled = false;
+            if (!isAuto) {
+                btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> <span>Force Manual Sync Now</span>`;
+                btn.disabled = false;
+            }
         }
 
         function showToast(message, isSuccess = true) {
