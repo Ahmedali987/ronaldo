@@ -14,11 +14,37 @@
 </head>
 <body class="bg-gray-200 text-gray-800 font-sans pb-10 min-h-screen">
 
-    <nav class="bg-black text-white px-4 py-4 flex items-center justify-center shadow-md relative">
-        <a href="index.html" class="text-xl font-bold tracking-wider hover:text-cyan-400 transition" title="Back to User View">
+    <!-- LOGIN MODAL -->
+    <div id="loginModal" class="fixed inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-96 space-y-5">
+            <h2 class="text-2xl font-bold text-center text-gray-800">Admin Login</h2>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" id="adminUser" class="mt-1 w-full border border-gray-300 rounded p-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Enter username">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Password</label>
+                <div class="relative">
+                    <input type="password" id="adminPass" class="mt-1 w-full border border-gray-300 rounded p-2 pr-10 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Enter password">
+                    <button onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3 flex items-center mt-1 text-gray-500 hover:text-gray-700">
+                        <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="loginError" class="text-red-500 text-sm hidden font-semibold">Invalid credentials! Please try again.</div>
+            <button onclick="checkLogin()" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 rounded transition">Login to Panel</button>
+        </div>
+    </div>
+
+    <!-- MAIN INTERFACE -->
+    <nav class="bg-black text-white px-4 py-4 flex items-center justify-between shadow-md relative">
+        <a href="index.html" class="text-xl font-bold tracking-wider hover:text-cyan-400 transition ml-4" title="Back to User View">
             RonaldoSmS Bot
         </a>
-        <span class="absolute right-4 text-xs font-bold bg-cyan-600 px-2 py-1 rounded">ADMIN MODE</span>
+        <div class="flex items-center space-x-4 mr-4">
+            <span class="text-xs font-bold bg-cyan-600 px-2 py-1 rounded">ADMIN MODE</span>
+            <button onclick="adminLogout()" class="text-xs font-bold bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded transition shadow">LOGOUT</button>
+        </div>
     </nav>
 
     <div class="max-w-7xl mx-auto p-2 sm:p-4 space-y-6 mt-4">
@@ -29,7 +55,7 @@
                 <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Upload New Range (.txt/.csv)</h2>
             </div>
             <div class="p-6">
-                <p class="text-sm text-gray-600 mb-4">Upload standard TXT or CSV files. The system will automatically separate numbers by their <strong>Range</strong> column if available. If no Range column is found, it uses the filename.</p>
+                <p class="text-sm text-gray-600 mb-4">Upload standard TXT or CSV files. The system will automatically check for duplicates and separate numbers by their <strong>Range</strong> column.</p>
                 <div class="flex items-center space-x-4 mb-4">
                     <input type="file" id="fileInput" accept=".txt,.csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100 border border-gray-300 rounded cursor-pointer">
                     <button onclick="processUpload()" class="bg-gray-800 hover:bg-black text-white px-6 py-2 rounded text-sm font-bold transition shadow-sm whitespace-nowrap">
@@ -40,7 +66,7 @@
                 <div id="uploadConfirmBox" class="hidden-view bg-yellow-50 border border-yellow-200 p-4 rounded-md">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-bold text-yellow-800">Confirm Upload Details:</h3>
-                        <span class="bg-yellow-200 text-yellow-900 text-xs font-bold px-2 py-1 rounded">Total Parsed: <span id="confirmValidCount">0</span></span>
+                        <span class="bg-yellow-200 text-yellow-900 text-xs font-bold px-2 py-1 rounded">New Unique Parsed: <span id="confirmValidCount">0</span></span>
                     </div>
                     
                     <p class="text-xs text-yellow-700 mb-2">The following ranges were detected. You can edit the range names before uploading:</p>
@@ -58,16 +84,21 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             <!-- MANAGE RANGES -->
-            <div class="bg-white shadow-md rounded border border-gray-300 overflow-hidden">
-                <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex justify-between items-center">
+            <div class="bg-white shadow-md rounded border border-gray-300 overflow-hidden flex flex-col max-h-[600px]">
+                <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex justify-between items-center shrink-0">
                     <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Manage Database Ranges</h2>
-                    <div id="loadingRanges" class="loader hidden"></div>
+                    <div class="flex items-center space-x-2">
+                        <div id="loadingRanges" class="loader hidden"></div>
+                        <button onclick="deleteSelectedRanges()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold transition shadow-sm border border-red-700">Delete Selected</button>
+                        <button onclick="deleteAllRanges()" class="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded text-xs font-bold transition shadow-sm">Delete All</button>
+                    </div>
                 </div>
-                <div class="p-4">
+                <div class="p-4 flex-1 overflow-y-auto">
                     <div class="table-container border border-gray-300 rounded-sm">
                         <table class="w-full text-left border-collapse text-sm">
-                            <thead class="bg-gray-100 border-b border-gray-300">
+                            <thead class="bg-gray-100 border-b border-gray-300 sticky top-0">
                                 <tr>
+                                    <th class="p-3 w-10 text-center"><input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)"></th>
                                     <th class="p-3 font-semibold text-gray-700 border-r border-gray-200">Range Name</th>
                                     <th class="p-3 font-semibold text-gray-700 border-r border-gray-200">Numbers Count</th>
                                     <th class="p-3 font-semibold text-gray-700 text-center">Action</th>
@@ -80,7 +111,7 @@
             </div>
 
             <!-- OTP API SIMULATOR -->
-            <div class="bg-white shadow-md rounded border border-gray-300 overflow-hidden">
+            <div class="bg-white shadow-md rounded border border-gray-300 overflow-hidden h-fit">
                 <div class="bg-gray-100 border-b border-gray-300 px-4 py-3">
                     <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Lamix API Sync</h2>
                 </div>
@@ -88,7 +119,7 @@
                     
                     <div class="bg-indigo-50 border-l-4 border-indigo-500 p-3 mb-4 text-sm text-indigo-700 shadow-sm">
                         <strong class="block mb-1">🔄 Auto-Sync Active</strong>
-                        The system automatically fetches and syncs OTPs every 1 minute in the background. It will <strong>only</strong> save OTPs for numbers that exist in your Database.
+                        The system automatically fetches and syncs OTPs every 1 minute in the background, matching strictly against your database numbers.
                     </div>
                     
                     <button onclick="syncOtpsFromApi(false)" id="apiSyncBtn" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded text-sm font-bold transition flex items-center justify-center space-x-2 shadow-sm">
@@ -96,7 +127,6 @@
                         <span>Force Manual Sync Now</span>
                     </button>
                     
-                    <!-- Status message container -->
                     <div id="apiSyncStatus" class="text-sm font-semibold text-center mt-2 p-3 rounded text-gray-500">Waiting for first sync...</div>
                 </div>
             </div>
@@ -110,9 +140,6 @@
     </div>
 
     <script>
-        // =====================================================================
-        // CONFIGURATION
-        // =====================================================================
         const LAMIX_API_TOKEN = 'D463wOy8iV8JLsesSz12G-rp1XXKAwlB3mvVWZeWNL0'; 
         const PRIVATE_PROXY_URL = 'https://lamix-proxy.ahmedalirutf.workers.dev';
 
@@ -131,35 +158,83 @@
         let toastTimeout;
 
         document.addEventListener('DOMContentLoaded', () => {
+            if(sessionStorage.getItem('admin_logged_in') !== 'true') {
+                document.getElementById('loginModal').classList.remove('hidden');
+            } else {
+                initAdmin();
+            }
+        });
+
+        function togglePassword() {
+            const passInput = document.getElementById('adminPass');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if(passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>`;
+            } else {
+                passInput.type = 'password';
+                eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>`;
+            }
+        }
+
+        function checkLogin() {
+            const u = document.getElementById('adminUser').value.trim();
+            const p = document.getElementById('adminPass').value.trim();
+            
+            if (u === 'Mohsin' && p === 'Moshin123') {
+                sessionStorage.setItem('admin_logged_in', 'true');
+                document.getElementById('loginModal').classList.add('hidden');
+                initAdmin();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
+        function adminLogout() {
+            sessionStorage.removeItem('admin_logged_in');
+            window.location.reload();
+        }
+
+        function initAdmin() {
             fetchAdminRanges().then(() => {
-                // Initial Sync a few seconds after the page loads
                 setTimeout(() => syncOtpsFromApi(true), 2000);
             });
-            
-            // Auto Sync every 60 seconds
             setInterval(() => {
                 syncOtpsFromApi(true);
             }, 60000); 
-        });
+        }
 
-        // Modifed to select range AND number, so we can filter OTPs later
+        async function fetchAllRows(endpoint) {
+            let allData = [];
+            let limit = 1000;
+            let offset = 0;
+            let fetching = true;
+
+            while (fetching) {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}?select=range,number&limit=${limit}&offset=${offset}`, { headers });
+                if (!res.ok) break;
+                const data = await res.json();
+                allData = allData.concat(data);
+                if (data.length < limit) {
+                    fetching = false;
+                } else {
+                    offset += limit;
+                }
+            }
+            return allData;
+        }
+
         async function fetchAdminRanges() {
             document.getElementById('loadingRanges').classList.remove('hidden');
             try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/web_numbers?select=range,number`, { headers });
-                if(res.ok) {
-                    adminUploadedNumbers = await res.json();
-                    renderAdminRanges(adminUploadedNumbers);
-                }
+                adminUploadedNumbers = await fetchAllRows('web_numbers');
+                renderAdminRanges(adminUploadedNumbers);
             } catch (error) {
                 showToast("Failed to fetch database ranges.", false);
             }
             document.getElementById('loadingRanges').classList.add('hidden');
         }
 
-        // =====================================================================
-        // ADVANCED FILE PARSER & EDIT UI
-        // =====================================================================
         function processUpload() {
             const fileInput = document.getElementById('fileInput');
             if (fileInput.files.length === 0) {
@@ -178,7 +253,7 @@
                 let colRange = -1, colPrefix = -1, colNumber = -1;
                 let isHeader = true;
 
-                lines.forEach((line, index) => {
+                lines.forEach((line) => {
                     const trimmedLine = line.trim();
                     if (!trimmedLine) return; 
                     
@@ -231,7 +306,19 @@
             reader.readAsText(file);
         }
 
-        function renderConfirmBox() {
+        async function renderConfirmBox() {
+            const existingRows = await fetchAllRows('web_numbers');
+            const existingSet = new Set(existingRows.map(n => String(n.number).replace(/\D/g, '')));
+
+            const uniqueParsed = tempParsedData.filter(item => !existingSet.has(String(item.number).replace(/\D/g, '')));
+            const duplicateCount = tempParsedData.length - uniqueParsed.length;
+            tempParsedData = uniqueParsed; 
+
+            if (tempParsedData.length === 0) {
+                showToast(`All ${duplicateCount} numbers in this file already exist in the database!`, false);
+                return;
+            }
+
             const confirmList = document.getElementById('confirmRangeList');
             confirmList.innerHTML = '';
             
@@ -246,7 +333,7 @@
                 li.innerHTML = `
                     <div>
                         <span class="font-bold text-gray-800">${rName}</span>
-                        <span class="text-xs text-gray-500 ml-2">(${count} numbers)</span>
+                        <span class="text-xs text-gray-500 ml-2">(${count} new numbers ${duplicateCount > 0 ? `| ${duplicateCount} duplicates skipped` : ''})</span>
                     </div>
                     <button onclick="editTempRange('${rName.replace(/'/g, "\\'")}')" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-bold px-3 py-1 rounded transition">Edit Range Name</button>
                 `;
@@ -270,25 +357,29 @@
 
         async function finalizeUpload() {
             if (tempParsedData.length > 0) {
-                showToast("Uploading to database...", true);
+                showToast("Uploading unique numbers to database...", true);
                 
                 try {
-                    const res = await fetch(`${SUPABASE_URL}/rest/v1/web_numbers`, {
-                        method: 'POST',
-                        headers: headers,
-                        body: JSON.stringify(tempParsedData)
-                    });
-
-                    if (res.ok) {
-                        showToast(`Successfully uploaded ${tempParsedData.length} numbers.`);
-                        cancelUpload(); 
-                        fetchAdminRanges(); 
-                        document.getElementById('fileInput').value = "";
-                    } else {
-                        showToast(`Upload failed. Check database rules.`, false);
+                    const chunkSize = 1000;
+                    for (let i = 0; i < tempParsedData.length; i += chunkSize) {
+                        const chunk = tempParsedData.slice(i, i + chunkSize);
+                        const res = await fetch(`${SUPABASE_URL}/rest/v1/web_numbers`, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(chunk)
+                        });
+                        
+                        if (!res.ok) {
+                            throw new Error("Upload failed on chunk " + (Math.floor(i/chunkSize) + 1));
+                        }
                     }
+
+                    showToast(`Successfully uploaded ${tempParsedData.length} unique numbers.`);
+                    cancelUpload(); 
+                    fetchAdminRanges(); 
+                    document.getElementById('fileInput').value = "";
                 } catch (err) {
-                    showToast(`Error connecting to database.`, false);
+                    showToast(`Database Error: ${err.message}`, false);
                 }
             }
         }
@@ -304,10 +395,10 @@
             
             const rangesCount = {};
             allNumbers.forEach(item => { rangesCount[item.range] = (rangesCount[item.range] || 0) + 1; });
-            const uniqueRanges = Object.keys(rangesCount);
+            const uniqueRanges = Object.keys(rangesCount).sort();
 
             if (uniqueRanges.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-gray-500">No ranges uploaded yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No ranges uploaded yet.</td></tr>`;
                 return;
             }
 
@@ -315,14 +406,43 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
                 tr.innerHTML = `
+                    <td class="p-3 text-center w-10"><input type="checkbox" class="range-checkbox" value="${rangeName.replace(/"/g, '&quot;')}"></td>
                     <td class="p-3 text-gray-700 font-bold border-r border-gray-200">${rangeName}</td>
                     <td class="p-3 text-gray-700 border-r border-gray-200">${rangesCount[rangeName]} numbers</td>
                     <td class="p-3 text-center">
-                        <button onclick="deleteRange('${rangeName.replace(/'/g, "\\'")}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold shadow-sm">Delete Database</button>
+                        <button onclick="deleteRange('${rangeName.replace(/'/g, "\\'")}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold shadow-sm">Delete</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function toggleSelectAll(master) {
+            const checkboxes = document.querySelectorAll('.range-checkbox');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+        }
+
+        async function deleteSelectedRanges() {
+            const checkedBoxes = document.querySelectorAll('.range-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                alert("Please select at least one range to delete.");
+                return;
+            }
+
+            if(confirm(`Are you sure you want to delete ${checkedBoxes.length} selected range(s) and their numbers?`)) {
+                showToast("Deleting selected ranges...", true);
+                try {
+                    for (const cb of checkedBoxes) {
+                        const rangeName = cb.value;
+                        await fetch(`${SUPABASE_URL}/rest/v1/web_numbers?range=eq.${encodeURIComponent(rangeName)}`, { method: 'DELETE', headers });
+                        await fetch(`${SUPABASE_URL}/rest/v1/web_otps?range=eq.${encodeURIComponent(rangeName)}`, { method: 'DELETE', headers });
+                    }
+                    showToast("Selected ranges deleted successfully.");
+                    fetchAdminRanges();
+                } catch (err) {
+                    showToast("Failed to delete selected ranges.", false);
+                }
+            }
         }
 
         async function deleteRange(rangeName) {
@@ -339,9 +459,20 @@
             }
         }
 
-        // =========================================================
-        // PRIVATE CLOUDFLARE WORKER SYNC & DB FILTERING
-        // =========================================================
+        async function deleteAllRanges() {
+            if(confirm('🚨 WARNING: Are you sure you want to delete ALL ranges and ALL numbers from the database? This action cannot be undone!')) {
+                showToast("Wiping database...", true);
+                try {
+                    await fetch(`${SUPABASE_URL}/rest/v1/web_numbers?id=not.is.null`, { method: 'DELETE', headers });
+                    await fetch(`${SUPABASE_URL}/rest/v1/web_otps?id=not.is.null`, { method: 'DELETE', headers });
+                    showToast(`Database completely wiped.`);
+                    fetchAdminRanges();
+                } catch (err) {
+                    showToast("Failed to delete ranges.", false);
+                }
+            }
+        }
+
         async function syncOtpsFromApi(isAuto = false) {
             const btn = document.getElementById('apiSyncBtn');
             const status = document.getElementById('apiSyncStatus');
@@ -356,7 +487,8 @@
             }
 
             try {
-                // 1. Fetch from Lamix API using Proxy
+                adminUploadedNumbers = await fetchAllRows('web_numbers');
+
                 const targetUrl = `https://panel.lamix.org/api/v1/messages?limit=1000&token=${LAMIX_API_TOKEN}`;
                 const proxyUrl = `${PRIVATE_PROXY_URL}/?url=${encodeURIComponent(targetUrl)}`;
                 
@@ -368,19 +500,26 @@
 
                 const records = lamixData.records || []; 
 
-                // 2. FILTERING LOGIC: Only allow OTPs that map to numbers currently in Supabase
-                const validNumbersSet = new Set(adminUploadedNumbers.map(n => n.number));
+                const validNumbersSet = new Set(adminUploadedNumbers.map(n => String(n.number).replace(/\D/g, '')));
 
                 const otpsToInsert = records
-                    .filter(msg => validNumbersSet.has(msg.number)) // Strict filter
+                    .filter(msg => {
+                        const cleanMsgNum = String(msg.number || '').replace(/\D/g, '');
+                        for (let dbNum of validNumbersSet) {
+                            if (dbNum === cleanMsgNum || dbNum.endsWith(cleanMsgNum) || cleanMsgNum.endsWith(dbNum)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    })
                     .map(msg => ({
-                        date: msg.time.replace('T', ' ').substring(0, 19), 
+                        date: msg.time ? msg.time.replace('T', ' ').substring(0, 19) : new Date().toISOString().replace('T', ' ').substring(0, 19), 
                         range: msg.range || 'Unknown Range',
                         number: msg.number,
+                        cli: msg.cli, 
                         otpMessage: msg.content
                     }));
 
-                // 3. Upload to Database
                 if (otpsToInsert.length > 0) {
                     await fetch(`${SUPABASE_URL}/rest/v1/web_otps?number=neq.null`, { method: 'DELETE', headers });
                     
