@@ -3,164 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RonaldoSmS Bot Panel</title>
+    <title>RonaldoSmS Bot</title>
+    <!-- We still load Tailwind for structural utility, but override it with 90s CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Table Customizations for Mobile */
+        /* Classic 90s System Theme */
+        body {
+            background-color: #c0c0c0;
+            font-family: 'MS Sans Serif', 'Segoe UI', Tahoma, Geneva, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #000;
+        }
+
+        /* 3D Window Bevels */
+        .win95-window {
+            background: #c0c0c0;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            margin-bottom: 10px;
+        }
+
+        .win95-titlebar {
+            background: #000080;
+            color: white;
+            font-weight: bold;
+            padding: 4px 8px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* 3D Inputs & Selects */
+        .win95-input {
+            background: #ffffff;
+            border-top: 2px solid #000000;
+            border-left: 2px solid #000000;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            padding: 2px 4px;
+            font-family: 'MS Sans Serif', Tahoma, sans-serif;
+            font-size: 13px;
+            outline: none;
+        }
+
+        /* 3D Buttons */
+        .win95-btn {
+            background: #c0c0c0;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            padding: 2px 10px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            color: black;
+        }
+        .win95-btn:active {
+            border-top: 2px solid #000000;
+            border-left: 2px solid #000000;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+        }
+        .win95-btn:disabled {
+            color: #808080;
+            text-shadow: 1px 1px 0px #fff;
+        }
+
+        /* Classic HTML Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+        }
+        th {
+            background: #c0c0c0;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+            padding: 4px;
+            font-size: 13px;
+            text-align: left;
+        }
+        td {
+            border: 1px solid #c0c0c0;
+            padding: 4px;
+            font-size: 13px;
+        }
+
+        /* Classic Blue Links */
+        .classic-link {
+            color: #0000ee;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
         .table-container {
             overflow-x: auto;
+            border-top: 2px solid #000000;
+            border-left: 2px solid #000000;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+        }
+
+        /* Helper container to stretch edge-to-edge */
+        .w-full-no-margin {
+            width: 100%;
+            padding: 0;
+            margin: 0;
         }
     </style>
 </head>
-<body class="bg-gray-200 text-gray-800 font-sans pb-10">
+<body>
 
-    <!-- Top Navigation (Updated) -->
-    <nav class="bg-black text-white px-4 py-4 flex items-center justify-center shadow-md">
-        <h1 class="text-xl font-bold tracking-wider">RonaldoSmS Bot</h1>
-    </nav>
-
-    <div class="max-w-7xl mx-auto p-2 sm:p-4 space-y-6">
+    <!-- Main Edge-to-Edge Container -->
+    <div class="w-full-no-margin">
 
         <!-- SECTION 1: TEST NUMBERS -->
-        <div class="bg-white shadow-md rounded border border-gray-300">
-            <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex flex-wrap justify-between items-center">
-                <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Test Numbers</h2>
-                <div id="numTotalBadge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded border border-cyan-300">
-                    Total: 0
-                </div>
+        <div class="win95-window">
+            <div class="win95-titlebar">
+                <span>RonaldoSmS Bot - Test Numbers</span>
+                <span id="numTotalBadge">Total: 0</span>
             </div>
             
-            <div class="p-4 space-y-4">
-                <!-- Controls: Search Bar & Dropdown -->
-                <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                    <!-- Search Input -->
-                    <div class="flex items-center space-x-2 w-full sm:w-auto">
-                        <label for="numSearchInput" class="font-semibold text-gray-700 text-sm">Search:</label>
-                        <input type="text" id="numSearchInput" placeholder="Range, prefix or number..." class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-64 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+            <div class="p-2">
+                <!-- Controls -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mb-2 gap-2">
+                    <div>
+                        <label class="text-[13px]">Search:</label>
+                        <input type="text" id="numSearchInput" class="win95-input" style="width: 150px;">
                     </div>
-
-                    <!-- Range Dropdown -->
-                    <div class="flex items-center space-x-2 w-full sm:w-auto">
-                        <label for="numRangeFilter" class="font-semibold text-gray-700 text-sm">Range:</label>
-                        <select id="numRangeFilter" class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-48 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
-                            <option value="All">-- Show All Ranges --</option>
-                            <!-- Options injected by JS -->
+                    <div>
+                        <label class="text-[13px]">Range:</label>
+                        <select id="numRangeFilter" class="win95-input">
+                            <option value="All">All Ranges</option>
                         </select>
                     </div>
-
-                    <div class="flex items-center space-x-2">
-                        <label class="font-semibold text-gray-700 text-sm">Show:</label>
-                        <select id="numLimit" class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-cyan-500">
+                    <div>
+                        <label class="text-[13px]">Show:</label>
+                        <select id="numLimit" class="win95-input">
                             <option value="25">25</option>
                             <option value="50">50</option>
                             <option value="100">100</option>
+                            <option value="0">0</option> <!-- 0 = Show All -->
                         </select>
                     </div>
                 </div>
 
-                <!-- Test Numbers Table -->
-                <div class="table-container border border-gray-200">
-                    <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
-                        <thead class="bg-gray-50 border-b border-gray-200">
+                <!-- Table -->
+                <div class="table-container">
+                    <table>
+                        <thead>
                             <tr>
-                                <th class="p-3 font-semibold text-gray-600">Range ↕</th>
-                                <th class="p-3 font-semibold text-gray-600">Prefix ↕</th>
-                                <th class="p-3 font-semibold text-gray-600">Test Number ↕ <span class="text-xs font-normal text-gray-400 ml-1">(Click to copy)</span></th>
+                                <th>Range</th>
+                                <th>Prefix</th>
+                                <th>Test Number</th>
                             </tr>
                         </thead>
-                        <tbody id="testNumbersTableBody" class="divide-y divide-gray-200">
+                        <tbody id="testNumbersTableBody">
                             <!-- Data injected via JS -->
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Pagination Footer -->
-                <div class="flex flex-col sm:flex-row justify-between items-center bg-gray-50 p-3 border border-gray-200 rounded text-sm">
-                    <div id="numInfo" class="text-gray-600 mb-2 sm:mb-0">Showing 0 to 0 of 0 entries</div>
-                    <div id="numPagination" class="flex space-x-1">
-                        <!-- Pagination Buttons injected here -->
-                    </div>
+                <!-- Footer (Info + Pagination) -->
+                <div class="mt-2 flex justify-between items-center text-[13px]">
+                    <div id="numInfo">Showing 0 to 0 of 0 entries</div>
+                    <div id="numPagination" class="flex space-x-1"></div>
                 </div>
             </div>
         </div>
 
-        <!-- SECTION 2: RECENT INBOUND (OTP SECTION) -->
-        <div class="bg-white shadow-md rounded border border-gray-300">
-            <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex flex-wrap justify-between items-center gap-2">
-                <div class="flex items-center space-x-3">
-                    <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Recent Inbound</h2>
-                    <div id="otpTotalBadge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded border border-cyan-300">
-                        Total OTPs: 0
-                    </div>
-                </div>
-                <button onclick="handleRefresh()" class="bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1.5 rounded text-sm font-semibold transition flex items-center space-x-1 shadow-sm active:bg-cyan-700">
-                    <svg id="refreshIcon" class="w-4 h-4 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    <span>REFRESH</span>
-                </button>
+        <!-- SECTION 2: RECENT INBOUND -->
+        <div class="win95-window">
+            <div class="win95-titlebar">
+                <span>Recent Inbound OTPs</span>
+                <span id="otpTotalBadge">Total OTPs: 0</span>
             </div>
             
-            <div class="p-4 space-y-4">
-                <!-- INBOUND Controls: Search Bar & Dropdown -->
-                <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                    <div class="flex items-center space-x-2 w-full sm:w-auto">
-                        <label for="otpSearchInput" class="font-semibold text-gray-700 text-sm">Search:</label>
-                        <input type="text" id="otpSearchInput" placeholder="Range, number, OTP..." class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-64 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+            <div class="p-2">
+                <!-- Controls -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mb-2 gap-2">
+                    <div>
+                        <label class="text-[13px]">Search:</label>
+                        <input type="text" id="otpSearchInput" class="win95-input" style="width: 150px;">
                     </div>
-                    <div class="flex items-center space-x-2 w-full sm:w-auto">
-                        <label for="otpRangeFilter" class="font-semibold text-gray-700 text-sm">Range:</label>
-                        <select id="otpRangeFilter" class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-48 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
-                            <option value="All">-- Show All Ranges --</option>
+                    <div>
+                        <label class="text-[13px]">Range:</label>
+                        <select id="otpRangeFilter" class="win95-input">
+                            <option value="All">All Ranges</option>
                         </select>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <label class="font-semibold text-gray-700 text-sm">Show:</label>
-                        <select id="otpLimit" class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-cyan-500">
+                    <div>
+                        <label class="text-[13px]">Show:</label>
+                        <select id="otpLimit" class="win95-input">
                             <option value="25">25</option>
                             <option value="50">50</option>
                             <option value="100">100</option>
+                            <option value="0">0</option>
                         </select>
                     </div>
+                    <button onclick="handleRefresh()" class="win95-btn">Refresh</button>
                 </div>
 
-                <!-- Recent Inbound Table -->
-                <div class="table-container border border-gray-200">
-                    <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
-                        <thead class="bg-gray-50 border-b border-gray-200">
+                <!-- Table -->
+                <div class="table-container">
+                    <table>
+                        <thead>
                             <tr>
-                                <th class="p-3 font-semibold text-gray-600">Date ↕</th>
-                                <th class="p-3 font-semibold text-gray-600">Range ↕</th>
-                                <th class="p-3 font-semibold text-gray-600">Number ↕</th>
-                                <th class="p-3 font-semibold text-gray-600">CLI (OTP) ↕</th>
+                                <th>Date</th>
+                                <th>Range</th>
+                                <th>Number</th>
+                                <th>CLI (OTP)</th>
                             </tr>
                         </thead>
-                        <tbody id="inboundTableBody" class="divide-y divide-gray-200">
+                        <tbody id="inboundTableBody">
                             <!-- Data injected via JS -->
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Pagination Footer -->
-                <div class="flex flex-col sm:flex-row justify-between items-center bg-gray-50 p-3 border border-gray-200 rounded text-sm">
-                    <div id="otpInfo" class="text-gray-600 mb-2 sm:mb-0">Showing 0 to 0 of 0 entries</div>
-                    <div id="otpPagination" class="flex space-x-1">
-                        <!-- Pagination Buttons injected here -->
-                    </div>
+                <!-- Footer (Info + Pagination) -->
+                <div class="mt-2 flex justify-between items-center text-[13px]">
+                    <div id="otpInfo">Showing 0 to 0 of 0 entries</div>
+                    <div id="otpPagination" class="flex space-x-1"></div>
                 </div>
             </div>
         </div>
 
-    </div>
-
-    <!-- Tailwind Toast Notification -->
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center space-x-2 translate-y-4">
-        <svg id="toastIcon" class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-        <span id="toastMessage" class="font-medium">Number copied to clipboard!</span>
     </div>
 
     <script>
         /* =====================================================================
-           MOCK ADMIN DATA
-           (Multiplied data so pagination triggers > 25 records visually)
+           MOCK ADMIN DATA 
            ===================================================================== */
         const baseAdminUploadedNumbers = [
             { range: 'Malaysia XOX LX 21Sep', prefix: '60', number: '601159053068' },
@@ -173,7 +253,7 @@
             { range: 'Libya (K)', prefix: '218', number: '218913609672' },
             { range: 'Sri Lanka LX 02Jul', prefix: '94', number: '94769631440' }
         ];
-        // Duplicate to create 36 records to demonstrate pagination
+        // 36 records
         const adminUploadedNumbers = [...baseAdminUploadedNumbers, ...baseAdminUploadedNumbers, ...baseAdminUploadedNumbers, ...baseAdminUploadedNumbers];
 
         const baseReceivedOTPs = [
@@ -184,17 +264,12 @@
             { date: '2026-09-22 09:52:24', range: 'Sri Lanka LX 02Jul', number: '94769631440', otpMessage: 'TikTOK99' },
             { date: '2026-09-22 09:48:12', range: 'Sri Lanka LX 15Sep', number: '94771226423', otpMessage: 'ALIX9922' }
         ];
-        // Duplicate to create 30 records to demonstrate pagination
+        // 30 records
         const receivedOTPs = [...baseReceivedOTPs, ...baseReceivedOTPs, ...baseReceivedOTPs, ...baseReceivedOTPs, ...baseReceivedOTPs];
 
-
         /* =====================================================================
-           USER SIDE LOGIC & PAGINATION
+           LOGIC & PAGINATION
            ===================================================================== */
-        
-        let toastTimeout;
-        
-        // Pagination States
         let numCurrentPage = 1;
         let otpCurrentPage = 1;
 
@@ -203,43 +278,32 @@
             renderNumbers();
             renderInbounds();
 
-            // NUMBERS: Event Listeners
             document.getElementById('numRangeFilter').addEventListener('change', () => { numCurrentPage = 1; renderNumbers(); });
             document.getElementById('numSearchInput').addEventListener('input', () => { numCurrentPage = 1; renderNumbers(); });
             document.getElementById('numLimit').addEventListener('change', () => { numCurrentPage = 1; renderNumbers(); });
 
-            // OTPs: Event Listeners
             document.getElementById('otpRangeFilter').addEventListener('change', () => { otpCurrentPage = 1; renderInbounds(); });
             document.getElementById('otpSearchInput').addEventListener('input', () => { otpCurrentPage = 1; renderInbounds(); });
             document.getElementById('otpLimit').addEventListener('change', () => { otpCurrentPage = 1; renderInbounds(); });
         });
 
-        // 1. Populate Dropdowns (Both Sections)
         function populateRangeDropdowns() {
-            // Numbers dropdown
             const numDropdown = document.getElementById('numRangeFilter');
-            const uniqueNumRanges = [...new Set(adminUploadedNumbers.map(item => item.range))];
-            uniqueNumRanges.forEach(range => {
-                numDropdown.insertAdjacentHTML('beforeend', `<option value="${range}">${range}</option>`);
-            });
+            [...new Set(adminUploadedNumbers.map(i => i.range))].forEach(r => numDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${r}</option>`));
 
-            // OTPs dropdown
             const otpDropdown = document.getElementById('otpRangeFilter');
-            const uniqueOtpRanges = [...new Set(receivedOTPs.map(item => item.range))];
-            uniqueOtpRanges.forEach(range => {
-                otpDropdown.insertAdjacentHTML('beforeend', `<option value="${range}">${range}</option>`);
-            });
+            [...new Set(receivedOTPs.map(i => i.range))].forEach(r => otpDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${r}</option>`));
         }
 
-        // 2. Render Test Numbers
+        // ================= TEST NUMBERS =================
         function renderNumbers() {
             const filterRange = document.getElementById('numRangeFilter').value;
             const searchText = document.getElementById('numSearchInput').value.toLowerCase();
-            const limit = parseInt(document.getElementById('numLimit').value);
+            let limit = parseInt(document.getElementById('numLimit').value);
+            
             const tbody = document.getElementById('testNumbersTableBody');
             tbody.innerHTML = ''; 
 
-            // Filter
             const filteredData = adminUploadedNumbers.filter(item => {
                 const matchesRange = filterRange === 'All' || item.range === filterRange;
                 const matchesSearch = searchText === '' || 
@@ -249,63 +313,56 @@
                 return matchesRange && matchesSearch;
             });
 
-            // Update Total Badge
             document.getElementById('numTotalBadge').textContent = `Total: ${filteredData.length}`;
 
-            // Handle Empty State ("0 Records")
             if(filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-gray-500 font-bold text-base">0 Records Found</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 10px;">0 Records Found</td></tr>`;
                 document.getElementById('numInfo').textContent = `Showing 0 to 0 of 0 entries`;
                 document.getElementById('numPagination').innerHTML = '';
                 return;
             }
 
-            // Pagination Math
+            // If 0, show all
+            if (limit === 0) limit = filteredData.length;
+
             const totalPages = Math.ceil(filteredData.length / limit);
             if (numCurrentPage > totalPages) numCurrentPage = totalPages;
+            if (numCurrentPage < 1) numCurrentPage = 1;
+
             const startIndex = (numCurrentPage - 1) * limit;
             const paginatedData = filteredData.slice(startIndex, startIndex + limit);
 
-            // Render Rows
             paginatedData.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-blue-50 transition";
                 tr.innerHTML = `
-                    <td class="p-3 text-gray-700 border-b">${row.range}</td>
-                    <td class="p-3 text-gray-700 border-b">${row.prefix}</td>
-                    <td class="p-3 font-bold text-gray-900 border-b cursor-pointer group" 
-                        onclick="copyToClipboard('${row.number}')" 
-                        title="Click to copy">
-                        <span class="border-b border-transparent group-hover:border-cyan-500 group-hover:text-cyan-600 transition">${row.number}</span>
-                        <svg class="w-4 h-4 inline opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    <td>${row.range}</td>
+                    <td>${row.prefix}</td>
+                    <td>
+                        <span class="classic-link" onclick="copyToClipboard(this, '${row.number}')">${row.number}</span>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Info Text
             const endIdx = Math.min(startIndex + limit, filteredData.length);
             document.getElementById('numInfo').textContent = `Showing ${startIndex + 1} to ${endIdx} of ${filteredData.length} entries`;
-            
-            // Render Pagination Buttons
             buildPagination(totalPages, numCurrentPage, 'numPagination', 'changeNumPage');
         }
 
-        // Global functions for pagination clicks
         window.changeNumPage = function(page) {
             numCurrentPage = page;
             renderNumbers();
         };
 
-        // 3. Render Recent Inbounds
+        // ================= INBOUND OTPS =================
         function renderInbounds() {
             const filterRange = document.getElementById('otpRangeFilter').value;
             const searchText = document.getElementById('otpSearchInput').value.toLowerCase();
-            const limit = parseInt(document.getElementById('otpLimit').value);
+            let limit = parseInt(document.getElementById('otpLimit').value);
+            
             const tbody = document.getElementById('inboundTableBody');
             tbody.innerHTML = ''; 
 
-            // Filter
             const filteredData = receivedOTPs.filter(item => {
                 const matchesRange = filterRange === 'All' || item.range === filterRange;
                 const matchesSearch = searchText === '' || 
@@ -315,49 +372,41 @@
                 return matchesRange && matchesSearch;
             });
 
-            // Update Total Badge
             document.getElementById('otpTotalBadge').textContent = `Total OTPs: ${filteredData.length}`;
 
-            // Handle Empty State ("0 Records")
             if(filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500 font-bold text-base">0 Records Found</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 10px;">0 Records Found</td></tr>`;
                 document.getElementById('otpInfo').textContent = `Showing 0 to 0 of 0 entries`;
                 document.getElementById('otpPagination').innerHTML = '';
                 return;
             }
 
-            // Pagination Math
+            // If 0, show all
+            if (limit === 0) limit = filteredData.length;
+
             const totalPages = Math.ceil(filteredData.length / limit);
             if (otpCurrentPage > totalPages) otpCurrentPage = totalPages;
+            if (otpCurrentPage < 1) otpCurrentPage = 1;
+
             const startIndex = (otpCurrentPage - 1) * limit;
             const paginatedData = filteredData.slice(startIndex, startIndex + limit);
 
-            // Render Rows
             paginatedData.forEach(row => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 transition";
-                
-                // Masking Logic
                 const rawOtp = row.otpMessage;
                 const maskedOtp = rawOtp.length > 3 ? rawOtp.substring(0, 3) + 'XXXX' : rawOtp + 'XXXX';
 
                 tr.innerHTML = `
-                    <td class="p-3 text-gray-600 border-b">${row.date}</td>
-                    <td class="p-3 text-gray-700 border-b">
-                        ${row.range.split(' ')[0]} <br>
-                        <span class="text-xs text-gray-400">${row.range}</span>
-                    </td>
-                    <td class="p-3 font-bold text-gray-900 border-b">${row.number}</td>
-                    <td class="p-3 text-gray-700 border-b font-mono">${maskedOtp}</td>
+                    <td>${row.date}</td>
+                    <td>${row.range}</td>
+                    <td>${row.number}</td>
+                    <td style="font-family: monospace;">${maskedOtp}</td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Info Text
             const endIdx = Math.min(startIndex + limit, filteredData.length);
             document.getElementById('otpInfo').textContent = `Showing ${startIndex + 1} to ${endIdx} of ${filteredData.length} entries`;
-            
-            // Render Pagination Buttons
             buildPagination(totalPages, otpCurrentPage, 'otpPagination', 'changeOtpPage');
         }
 
@@ -366,95 +415,53 @@
             renderInbounds();
         };
 
-        // 4. Reusable Pagination Builder
+        // ================= PAGINATION BUILDER =================
         function buildPagination(totalPages, currentPage, containerId, callbackFn) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
             
-            if(totalPages <= 1) return; // Don't show pagination if only 1 page
+            if(totalPages <= 1) return;
 
-            // Prev Button
             const prevDisabled = currentPage === 1;
             container.insertAdjacentHTML('beforeend', `
-                <button onclick="${callbackFn}(${currentPage - 1})" 
-                        class="px-3 py-1 border border-gray-300 bg-white text-sm rounded-l-md hover:bg-gray-100 ${prevDisabled ? 'opacity-50 cursor-not-allowed' : ''}" 
-                        ${prevDisabled ? 'disabled' : ''}>
-                    Prev
-                </button>
+                <button onclick="${callbackFn}(${currentPage - 1})" class="win95-btn" ${prevDisabled ? 'disabled' : ''}>Prev</button>
             `);
 
-            // Page Numbers
             for (let i = 1; i <= totalPages; i++) {
-                const isActive = currentPage === i;
-                container.insertAdjacentHTML('beforeend', `
-                    <button onclick="${callbackFn}(${i})" 
-                            class="px-3 py-1 border-t border-b border-r border-gray-300 text-sm ${isActive ? 'bg-cyan-500 text-white font-bold' : 'bg-white hover:bg-gray-100 text-gray-700'}">
-                        ${i}
-                    </button>
-                `);
+                if (i === currentPage) {
+                    // Active button styling for 90s
+                    container.insertAdjacentHTML('beforeend', `<button class="win95-btn" style="border-top: 2px solid #000; border-left: 2px solid #000; border-right: 2px solid #fff; border-bottom: 2px solid #fff;" disabled>${i}</button>`);
+                } else {
+                    container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${i})" class="win95-btn">${i}</button>`);
+                }
             }
 
-            // Next Button
             const nextDisabled = currentPage === totalPages;
             container.insertAdjacentHTML('beforeend', `
-                <button onclick="${callbackFn}(${currentPage + 1})" 
-                        class="px-3 py-1 border-t border-b border-r border-gray-300 bg-white text-sm rounded-r-md hover:bg-gray-100 ${nextDisabled ? 'opacity-50 cursor-not-allowed' : ''}" 
-                        ${nextDisabled ? 'disabled' : ''}>
-                    Next
-                </button>
+                <button onclick="${callbackFn}(${currentPage + 1})" class="win95-btn" ${nextDisabled ? 'disabled' : ''}>Next</button>
             `);
         }
 
-        // 5. Working Refresh Button
+        // ================= UTILITIES =================
         function handleRefresh() {
-            const refreshIcon = document.getElementById('refreshIcon');
-            refreshIcon.classList.add('-rotate-180');
-            showToast("Refreshing data...", false);
-
-            setTimeout(() => {
-                otpCurrentPage = 1; // Reset to page 1 on refresh
-                renderInbounds(); 
-                refreshIcon.classList.remove('-rotate-180');
-                showToast("Data is up to date!", true);
-            }, 800);
+            otpCurrentPage = 1;
+            renderInbounds(); 
         }
 
-        // 6. Copy to Clipboard
-        function copyToClipboard(text) {
+        function copyToClipboard(element, text) {
             navigator.clipboard.writeText(text).then(() => {
-                showToast(`Copied: ${text}`, true);
+                // Turn green, remove underline
+                element.style.color = '#00aa00';
+                element.style.textDecoration = 'none';
+                
+                // Revert after 2 seconds
+                setTimeout(() => {
+                    element.style.color = '#0000ee';
+                    element.style.textDecoration = 'underline';
+                }, 2000);
             }).catch(err => {
                 console.error('Failed to copy: ', err);
-                showToast(`Failed to copy`, false);
             });
-        }
-
-        // 7. Toast Notification
-        function showToast(message, isSuccess = true) {
-            const toast = document.getElementById("toast");
-            const toastMessage = document.getElementById("toastMessage");
-            const toastIcon = document.getElementById("toastIcon");
-
-            clearTimeout(toastTimeout);
-            toastMessage.textContent = message;
-            
-            if(isSuccess) {
-                toastIcon.classList.remove("text-yellow-400", "animate-spin");
-                toastIcon.classList.add("text-green-400");
-                toastIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>`;
-            } else {
-                toastIcon.classList.remove("text-green-400");
-                toastIcon.classList.add("text-yellow-400", "animate-spin");
-                toastIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>`;
-            }
-
-            toast.classList.remove("opacity-0", "translate-y-4");
-            toast.classList.add("opacity-100", "translate-y-0");
-            
-            toastTimeout = setTimeout(() => {
-                toast.classList.remove("opacity-100", "translate-y-0");
-                toast.classList.add("opacity-0", "translate-y-4");
-            }, 2500);
         }
     </script>
 </body>
