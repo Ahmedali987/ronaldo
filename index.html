@@ -8,7 +8,7 @@
     <style>
         .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .page-btn {
-            padding: 4px 10px; border: 1px solid #d1d5db; background: linear-gradient(to bottom, #ffffff 0%, #f3f4f6 100%);
+            padding: 6px 12px; border: 1px solid #d1d5db; background: linear-gradient(to bottom, #ffffff 0%, #f3f4f6 100%);
             color: #374151; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
         }
         .page-btn:hover:not(:disabled) { background: #e5e7eb; }
@@ -29,10 +29,11 @@
         </a>
     </nav>
 
-    <div class="max-w-7xl mx-auto p-2 sm:p-4 space-y-6 mt-4">
+    <!-- Edge-to-Edge Container -->
+    <div class="w-full space-y-6 mt-4">
 
         <!-- SECTION 1: TEST NUMBERS -->
-        <div class="bg-white shadow-md rounded border border-gray-300 overflow-hidden">
+        <div class="bg-white shadow-md border-y border-gray-300 overflow-hidden">
             <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex flex-wrap justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Test Numbers</h2>
@@ -45,17 +46,17 @@
                 <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                     <div class="flex items-center space-x-2 w-full sm:w-auto">
                         <label class="font-semibold text-gray-700 text-sm">Search:</label>
-                        <input type="text" id="numSearchInput" placeholder="Range, prefix or number..." class="border border-gray-300 rounded px-3 py-1.5 text-sm w-full sm:w-64 focus:outline-none focus:border-cyan-500 shadow-sm">
+                        <input type="text" id="numSearchInput" placeholder="Range, prefix or number..." class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-64 focus:outline-none focus:border-cyan-500 shadow-sm">
                     </div>
                     <div class="flex items-center space-x-2 w-full sm:w-auto">
                         <label class="font-semibold text-gray-700 text-sm">Range:</label>
-                        <select id="numRangeFilter" class="border border-gray-300 rounded px-3 py-1.5 text-sm w-full sm:w-48 focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
+                        <select id="numRangeFilter" class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-48 focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
                             <option value="All">-- Show All Ranges --</option>
                         </select>
                     </div>
                     <div class="flex items-center space-x-2">
                         <label class="font-semibold text-gray-700 text-sm">Show:</label>
-                        <select id="numLimit" class="border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
+                        <select id="numLimit" class="border border-gray-300 rounded px-2 py-2 text-sm focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
                             <option value="0">0</option>
                             <option value="25" selected>25</option>
                             <option value="50">50</option>
@@ -64,7 +65,7 @@
                     </div>
                 </div>
 
-                <div class="table-container border border-gray-300 rounded-sm">
+                <div class="table-container border-y sm:border border-gray-300">
                     <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
                         <thead class="bg-gray-100 border-b border-gray-300">
                             <tr>
@@ -87,14 +88,14 @@
         </div>
 
         <!-- SECTION 2: RECENT INBOUND -->
-        <div class="bg-white shadow-md rounded border border-gray-300 overflow-hidden">
+        <div class="bg-white shadow-md border-y border-gray-300 overflow-hidden">
             <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex flex-wrap justify-between items-center gap-2">
                 <div class="flex items-center space-x-3">
                     <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Recent Inbound</h2>
                     <div id="loadingOtp" class="loader hidden"></div>
                     <div id="otpTotalBadge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded border border-cyan-300 shadow-sm">Total OTPs: 0</div>
                 </div>
-                <button onclick="loadDataFromDatabase()" class="bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1.5 rounded text-sm font-bold transition flex items-center space-x-1.5 shadow-sm">
+                <button onclick="handleRefresh()" class="bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1.5 rounded text-sm font-bold transition flex items-center space-x-1.5 shadow-sm">
                     <svg id="refreshIcon" class="w-4 h-4 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     <span>REFRESH</span>
                 </button>
@@ -104,17 +105,17 @@
                 <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                     <div class="flex items-center space-x-2 w-full sm:w-auto">
                         <label class="font-semibold text-gray-700 text-sm">Search:</label>
-                        <input type="text" id="otpSearchInput" placeholder="Range, number, OTP..." class="border border-gray-300 rounded px-3 py-1.5 text-sm w-full sm:w-64 focus:outline-none focus:border-cyan-500 shadow-sm">
+                        <input type="text" id="otpSearchInput" placeholder="Range, number, OTP..." class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-64 focus:outline-none focus:border-cyan-500 shadow-sm">
                     </div>
                     <div class="flex items-center space-x-2 w-full sm:w-auto">
                         <label class="font-semibold text-gray-700 text-sm">Range:</label>
-                        <select id="otpRangeFilter" class="border border-gray-300 rounded px-3 py-1.5 text-sm w-full sm:w-48 focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
+                        <select id="otpRangeFilter" class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-48 focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
                             <option value="All">-- Show All Ranges --</option>
                         </select>
                     </div>
                     <div class="flex items-center space-x-2">
                         <label class="font-semibold text-gray-700 text-sm">Show:</label>
-                        <select id="otpLimit" class="border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
+                        <select id="otpLimit" class="border border-gray-300 rounded px-2 py-2 text-sm focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
                             <option value="0">0</option>
                             <option value="25" selected>25</option>
                             <option value="50">50</option>
@@ -123,7 +124,7 @@
                     </div>
                 </div>
 
-                <div class="table-container border border-gray-300 rounded-sm">
+                <div class="table-container border-y sm:border border-gray-300">
                     <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
                         <thead class="bg-gray-100 border-b border-gray-300">
                             <tr>
@@ -161,7 +162,8 @@
         const headers = {
             'apikey': SUPABASE_ANON_KEY,
             'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
         };
 
         let adminUploadedNumbers = [];
@@ -185,14 +187,11 @@
         async function loadDataFromDatabase() {
             document.getElementById('loadingNum').classList.remove('hidden');
             document.getElementById('loadingOtp').classList.remove('hidden');
-            document.getElementById('refreshIcon').classList.add('animate-spin');
 
             try {
-                // Fetch Numbers
                 const numRes = await fetch(`${SUPABASE_URL}/rest/v1/web_numbers?select=*`, { headers });
                 if(numRes.ok) adminUploadedNumbers = await numRes.json();
 
-                // Fetch OTPs
                 const otpRes = await fetch(`${SUPABASE_URL}/rest/v1/web_otps?select=*&order=date.desc`, { headers });
                 if(otpRes.ok) receivedOTPs = await otpRes.json();
 
@@ -206,7 +205,6 @@
 
             document.getElementById('loadingNum').classList.add('hidden');
             document.getElementById('loadingOtp').classList.add('hidden');
-            document.getElementById('refreshIcon').classList.remove('animate-spin');
         }
 
         function populateRangeDropdowns() {
@@ -248,13 +246,21 @@
             const startIndex = (numCurrentPage - 1) * limit;
             const paginatedData = filteredData.slice(startIndex, startIndex + limit);
 
+            // Copy Icon SVG
+            const copySvg = `<svg class="w-4 h-4 ml-1.5 text-gray-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`;
+
             paginatedData.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 transition";
                 tr.innerHTML = `
                     <td class="p-3 text-gray-700 border-r border-gray-200">${row.range}</td>
                     <td class="p-3 text-gray-700 border-r border-gray-200">${row.prefix}</td>
-                    <td class="p-3 font-bold text-gray-900 cursor-pointer select-none" onclick="copyToClipboard(this, '${row.number}')">${row.number}</td>
+                    <td class="p-3 font-bold text-gray-900 cursor-pointer select-none group" onclick="copyToClipboard(this, '${row.number}')">
+                        <div class="flex items-center">
+                            <span class="num-text transition-colors duration-200">${row.number}</span>
+                            <span class="icon-container" data-original='${copySvg}'>${copySvg}</span>
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -324,19 +330,46 @@
             const firstDisabled = currentPage === 1;
             container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(1)" class="page-btn" ${firstDisabled ? 'disabled' : ''}>First</button>`);
             container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${currentPage - 1})" class="page-btn" ${firstDisabled ? 'disabled' : ''}>Previous</button>`);
+
             for (let i = 1; i <= totalPages; i++) {
                 const isActive = currentPage === i;
                 container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${i})" class="page-btn ${isActive ? 'active' : ''}">${i}</button>`);
             }
+
             const lastDisabled = currentPage === totalPages;
             container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${currentPage + 1})" class="page-btn" ${lastDisabled ? 'disabled' : ''}>Next</button>`);
             container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${totalPages})" class="page-btn" ${lastDisabled ? 'disabled' : ''}>Last</button>`);
         }
 
+        function handleRefresh() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            refreshIcon.classList.add('-rotate-180');
+            setTimeout(() => {
+                loadDataFromDatabase();
+                refreshIcon.classList.remove('-rotate-180');
+            }, 500);
+        }
+
+        // Updated Copy logic to show Green Checkmark for 3 seconds
         function copyToClipboard(element, text) {
             navigator.clipboard.writeText(text).then(() => {
-                element.style.color = '#10b981';
-                setTimeout(() => { element.style.color = ''; }, 2000);
+                const iconContainer = element.querySelector('.icon-container');
+                const numText = element.querySelector('.num-text');
+                
+                if(iconContainer && numText) {
+                    const originalSvg = iconContainer.getAttribute('data-original');
+                    const checkSvg = `<svg class="w-4 h-4 ml-1.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                    
+                    // Switch to checkmark and turn number green
+                    iconContainer.innerHTML = checkSvg;
+                    numText.classList.add('text-green-500');
+                    
+                    // Reset after 3 seconds
+                    setTimeout(() => { 
+                        iconContainer.innerHTML = originalSvg;
+                        numText.classList.remove('text-green-500');
+                    }, 3000);
+                }
             }).catch(err => { console.error('Failed to copy: ', err); });
         }
 
