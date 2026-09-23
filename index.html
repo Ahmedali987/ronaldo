@@ -7,22 +7,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        /* Modern Table Enhancements */
-        table { border-spacing: 0; width: 100%; }
+        table { border-spacing: 0; width: 100%; table-layout: fixed; }
         th { background-color: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; border-bottom: 2px solid #e2e8f0; }
-        td { border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 13px; }
+        td { border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 13px; word-break: break-word; overflow-wrap: break-word; white-space: normal !important; }
         tbody tr { transition: background-color 0.15s ease-in-out; }
         tbody tr:hover { background-color: #f8fafc; }
         .page-btn {
             padding: 6px 12px; border: 1px solid #d1d5db; background: linear-gradient(to bottom, #ffffff 0%, #f3f4f6 100%);
             color: #374151; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+            margin-left: -1px;
         }
         .page-btn:hover:not(:disabled) { background: #e5e7eb; }
         .page-btn.active { background: #f9fafb; font-weight: bold; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
         .page-btn:disabled { color: #9ca3af; cursor: not-allowed; background: #f9fafb; }
         .page-btn:first-child { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
         .page-btn:last-child { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
-        .page-btn + .page-btn { border-left: none; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #06b6d4; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -71,12 +70,12 @@
                 </div>
 
                 <div class="table-container border sm:border border-gray-300 rounded-sm shadow-sm">
-                    <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
+                    <table class="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr>
-                                <th class="p-3 border-r border-gray-200">Range ↕</th>
-                                <th class="p-3 border-r border-gray-200">Prefix ↕</th>
-                                <th class="p-3">Test Number ↕</th>
+                                <th class="p-3 border-r border-gray-200 w-2/5">Range ↕</th>
+                                <th class="p-3 border-r border-gray-200 w-1/5">Prefix ↕</th>
+                                <th class="p-3 w-2/5">Test Number ↕</th>
                             </tr>
                         </thead>
                         <tbody id="testNumbersTableBody"></tbody>
@@ -85,8 +84,8 @@
 
                 <div class="flex flex-col space-y-2 pt-2">
                     <div id="numInfo" class="text-gray-600 text-[13px]">Showing 0 to 0 of 0 entries</div>
-                    <div class="flex overflow-x-auto pb-1">
-                        <div id="numPagination" class="flex whitespace-nowrap"></div>
+                    <div class="flex overflow-x-auto pb-2 w-full custom-scrollbar">
+                        <div id="numPagination" class="flex shadow-sm rounded-md w-max"></div>
                     </div>
                 </div>
             </div>
@@ -130,13 +129,13 @@
                 </div>
 
                 <div class="table-container border sm:border border-gray-300 rounded-sm shadow-sm">
-                    <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
+                    <table class="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr>
-                                <th class="p-3 border-r border-gray-200">Date ↕</th>
-                                <th class="p-3 border-r border-gray-200">Range ↕</th>
-                                <th class="p-3 border-r border-gray-200">Number ↕</th>
-                                <th class="p-3">Service (CLI) ↕</th>
+                                <th class="p-3 border-r border-gray-200 w-1/4">Date ↕</th>
+                                <th class="p-3 border-r border-gray-200 w-1/3">Range ↕</th>
+                                <th class="p-3 border-r border-gray-200 w-1/4">Number ↕</th>
+                                <th class="p-3 w-1/6">Service (CLI) ↕</th>
                             </tr>
                         </thead>
                         <tbody id="inboundTableBody"></tbody>
@@ -145,8 +144,8 @@
 
                 <div class="flex flex-col space-y-2 pt-2">
                     <div id="otpInfo" class="text-gray-600 text-[13px]">Showing 0 to 0 of 0 entries</div>
-                    <div class="flex overflow-x-auto pb-1">
-                        <div id="otpPagination" class="flex whitespace-nowrap"></div>
+                    <div class="flex overflow-x-auto pb-2 w-full custom-scrollbar">
+                        <div id="otpPagination" class="flex shadow-sm rounded-md w-max"></div>
                     </div>
                 </div>
             </div>
@@ -176,6 +175,70 @@
         let otpCurrentPage = 1;
         let toastTimeout;
 
+        // =====================================================================
+        // ADVANCED RANGE NAME DECODER LOGIC
+        // =====================================================================
+        function decodeRangeName(originalName) {
+            if (!originalName) return "";
+            
+            const monthMapping = {
+                'jan': 'J1E', 'feb': 'F', 'mar': 'M', 'apr': 'A', 'may': 'M', 'jun': 'J1N',
+                'jul': 'J2Y', 'aug': 'A', 'sep': 'S', 'oct': 'O', 'nov': 'N', 'dec': 'D'
+            };
+
+            // Rule 1: If it contains LX, decode ONLY the LX + Date part. (e.g. Egypt Orange [X] LX 10Aug)
+            const lxRegex = /\bLX\s*(\d{1,2})([A-Za-z]{3})\b/i;
+            if (lxRegex.test(originalName)) {
+                return originalName.replace(lxRegex, (match, day, monthStr) => {
+                    const mCode = monthMapping[monthStr.toLowerCase()] || monthStr.toUpperCase();
+                    return `RX ${day}${mCode}`;
+                });
+            }
+
+            // Rule 2: If NO LX is present, parse Country, Operator, (Context), and Date
+            const endRegex = /(.*?)(?:\s+\((.*?)\))?\s+(\d{1,2})([A-Za-z]{3})\s*$/i;
+            const match = originalName.match(endRegex);
+
+            if (match) {
+                let prefix = match[1].trim(); 
+                let context = match[2]; 
+                let day = match[3]; 
+                let monthStr = match[4]; 
+
+                // Process Date
+                let mCode = monthMapping[monthStr.toLowerCase()] || monthStr.toUpperCase();
+                let newDate = `${day}${mCode}`;
+
+                // Process Context (e.g. paypal -> pypl)
+                let newContext = "";
+                if (context) {
+                    let noVowels = context.replace(/[aeiouAEIOU]/g, '');
+                    if (!noVowels) noVowels = context; 
+                    newContext = `(${noVowels})`;
+                }
+
+                // Process Operator (Shrink last word of prefix if more than 1 word exists)
+                let prefixWords = prefix.split(/\s+/);
+                if (prefixWords.length > 1) {
+                    let operator = prefixWords.pop();
+                    if (operator.length === 3) {
+                        operator = operator.substring(0, 1);
+                    } else if (operator.length > 3) {
+                        operator = operator.substring(0, 3);
+                    }
+                    prefix = [...prefixWords, operator].join(' ');
+                }
+
+                let parts = [prefix];
+                if (newContext) parts.push(newContext);
+                parts.push(newDate);
+
+                return parts.join(' ');
+            }
+
+            return originalName;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadDataFromDatabase();
 
@@ -186,6 +249,15 @@
             document.getElementById('otpRangeFilter').addEventListener('change', () => { otpCurrentPage = 1; renderInbounds(); });
             document.getElementById('otpSearchInput').addEventListener('input', () => { otpCurrentPage = 1; renderInbounds(); });
             document.getElementById('otpLimit').addEventListener('change', () => { otpCurrentPage = 1; renderInbounds(); });
+            
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (adminUploadedNumbers.length > 0) renderNumbers();
+                    if (receivedOTPs.length > 0) renderInbounds();
+                }, 150);
+            });
         });
 
         async function fetchAllRows(tableName, queryParams = '') {
@@ -232,13 +304,21 @@
         }
 
         function populateRangeDropdowns() {
+            const rawRanges = [...new Set(adminUploadedNumbers.map(i => i.range))].sort();
             const numDropdown = document.getElementById('numRangeFilter');
             numDropdown.innerHTML = '<option value="All">-- Show All Ranges --</option>';
-            [...new Set(adminUploadedNumbers.map(i => i.range))].sort().forEach(r => numDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${r}</option>`));
+            rawRanges.forEach(r => {
+                const decoded = decodeRangeName(r);
+                numDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${decoded}</option>`);
+            });
 
+            const rawOtpRanges = [...new Set(receivedOTPs.map(i => i.range))].sort();
             const otpDropdown = document.getElementById('otpRangeFilter');
             otpDropdown.innerHTML = '<option value="All">-- Show All Ranges --</option>';
-            [...new Set(receivedOTPs.map(i => i.range))].sort().forEach(r => otpDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${r}</option>`));
+            rawOtpRanges.forEach(r => {
+                const decoded = decodeRangeName(r);
+                otpDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${decoded}</option>`);
+            });
         }
 
         function renderNumbers() {
@@ -250,7 +330,8 @@
 
             const filteredData = adminUploadedNumbers.filter(item => {
                 const matchesRange = filterRange === 'All' || item.range === filterRange;
-                const matchesSearch = searchText === '' || (item.range && item.range.toLowerCase().includes(searchText)) || (item.prefix && item.prefix.toLowerCase().includes(searchText)) || (item.number && item.number.toLowerCase().includes(searchText));
+                const decodedRange = decodeRangeName(item.range).toLowerCase();
+                const matchesSearch = searchText === '' || decodedRange.includes(searchText) || (item.range && item.range.toLowerCase().includes(searchText)) || (item.prefix && item.prefix.toLowerCase().includes(searchText)) || (item.number && item.number.toLowerCase().includes(searchText));
                 return matchesRange && matchesSearch;
             });
 
@@ -274,8 +355,9 @@
 
             paginatedData.forEach(row => {
                 const tr = document.createElement('tr');
+                const displayRange = decodeRangeName(row.range);
                 tr.innerHTML = `
-                    <td class="p-3 text-gray-700 border-r border-gray-200">${row.range}</td>
+                    <td class="p-3 text-gray-700 border-r border-gray-200">${displayRange}</td>
                     <td class="p-3 text-gray-700 border-r border-gray-200">${row.prefix}</td>
                     <td class="p-3 font-bold text-gray-900 cursor-pointer select-none group" onclick="copyToClipboard(this, '${row.number}')">
                         <div class="flex items-center">
@@ -303,7 +385,8 @@
 
             const filteredData = receivedOTPs.filter(item => {
                 const matchesRange = filterRange === 'All' || item.range === filterRange;
-                const matchesSearch = searchText === '' || (item.range && item.range.toLowerCase().includes(searchText)) || (item.number && item.number.toLowerCase().includes(searchText)) || (item.cli && item.cli.toLowerCase().includes(searchText));
+                const decodedRange = decodeRangeName(item.range).toLowerCase();
+                const matchesSearch = searchText === '' || decodedRange.includes(searchText) || (item.range && item.range.toLowerCase().includes(searchText)) || (item.number && item.number.toLowerCase().includes(searchText)) || (item.cli && item.cli.toLowerCase().includes(searchText));
                 return matchesRange && matchesSearch;
             });
 
@@ -326,10 +409,11 @@
             paginatedData.forEach(row => {
                 const tr = document.createElement('tr');
                 const cliName = row.cli || row.service || 'System Alert';
+                const displayRange = decodeRangeName(row.range);
                 
                 tr.innerHTML = `
                     <td class="p-3 text-gray-600 border-r border-gray-200">${row.date || 'N/A'}</td>
-                    <td class="p-3 text-gray-700 border-r border-gray-200">${row.range ? row.range.split(' ')[0] : 'Unknown'} <br><span class="text-xs text-gray-400">${row.range || ''}</span></td>
+                    <td class="p-3 text-gray-700 border-r border-gray-200">${displayRange}</td>
                     <td class="p-3 font-bold text-gray-900 border-r border-gray-200">${row.number || 'N/A'}</td>
                     <td class="p-3 font-semibold text-gray-900 uppercase">${cliName}</td>
                 `;
@@ -343,23 +427,43 @@
 
         window.changeOtpPage = function(page) { otpCurrentPage = page; renderInbounds(); };
 
+        // =====================================================================
+        // ROBUST DYNAMIC SLIDING PAGINATION
+        // =====================================================================
         function buildPagination(totalPages, currentPage, containerId, callbackFn) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
-            if(totalPages <= 1) return; 
+            if (totalPages <= 1) return; 
 
-            const firstDisabled = currentPage === 1;
-            container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(1)" class="page-btn" ${firstDisabled ? 'disabled' : ''}>First</button>`);
-            container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${currentPage - 1})" class="page-btn" ${firstDisabled ? 'disabled' : ''}>Previous</button>`);
+            // Calculate safe available width for page number buttons.
+            // Reserve ~320px for First, Prev, Next, Last buttons to prevent cutoffs.
+            const containerWidth = container.parentElement.clientWidth || window.innerWidth;
+            const availableWidth = containerWidth - 320; 
+            // 45px per button covers larger 3-to-4 digit numbers safely
+            const maxVisible = Math.max(3, Math.floor(availableWidth / 45)); 
 
-            for (let i = 1; i <= totalPages; i++) {
+            // First & Prev buttons (Always rendered, disabled if on first page)
+            const prevDisabled = currentPage === 1 ? 'disabled' : '';
+            container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage > 1 ? callbackFn + '(1)' : 'return false;'}" class="page-btn" ${prevDisabled}>First</button>`);
+            container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage > 1 ? callbackFn + '(' + (currentPage - 1) + ')' : 'return false;'}" class="page-btn" ${prevDisabled}>Previous</button>`);
+
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = startPage + maxVisible - 1;
+
+            if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
                 const isActive = currentPage === i;
                 container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${i})" class="page-btn ${isActive ? 'active' : ''}">${i}</button>`);
             }
 
-            const lastDisabled = currentPage === totalPages;
-            container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${currentPage + 1})" class="page-btn" ${lastDisabled ? 'disabled' : ''}>Next</button>`);
-            container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${totalPages})" class="page-btn" ${lastDisabled ? 'disabled' : ''}>Last</button>`);
+            // Next & Last buttons (Always rendered, disabled if on last page)
+            const nextDisabled = currentPage === totalPages ? 'disabled' : '';
+            container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage < totalPages ? callbackFn + '(' + (currentPage + 1) + ')' : 'return false;'}" class="page-btn" ${nextDisabled}>Next</button>`);
+            container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage < totalPages ? callbackFn + '(' + totalPages + ')' : 'return false;'}" class="page-btn" ${nextDisabled}>Last</button>`);
         }
 
         function handleRefresh() {
