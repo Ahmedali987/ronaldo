@@ -8,10 +8,19 @@
     <style>
         .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         table { border-spacing: 0; width: 100%; table-layout: fixed; }
-        th { background-color: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; border-bottom: 2px solid #e2e8f0; }
+        th {
+            background-color: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase;
+            font-size: 11px; letter-spacing: 0.05em; border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
         td { border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 13px; word-break: break-word; overflow-wrap: break-word; white-space: normal !important; }
         tbody tr { transition: background-color 0.15s ease-in-out; }
         tbody tr:hover { background-color: #f8fafc; }
+
+        /* Tables that need single-line cells with horizontal scrolling instead of wrapping */
+        .nowrap-table table { table-layout: auto; width: max-content; min-width: 100%; }
+        .nowrap-table td, .nowrap-table th { white-space: nowrap !important; }
+
         .page-btn {
             padding: 6px 12px; border: 1px solid #d1d5db; background: linear-gradient(to bottom, #ffffff 0%, #f3f4f6 100%);
             color: #374151; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
@@ -22,8 +31,6 @@
         .page-btn:disabled { color: #9ca3af; cursor: not-allowed; background: #f9fafb; }
         .page-btn:first-child { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
         .page-btn:last-child { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #06b6d4; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-gray-200 text-gray-800 font-sans pb-10 min-h-screen">
@@ -38,14 +45,11 @@
 
         <!-- SECTION 1: TEST NUMBERS -->
         <div class="bg-white shadow-md border-y border-gray-300 overflow-hidden">
-            <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex flex-wrap justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Test Numbers</h2>
-                    <div id="loadingNum" class="loader hidden"></div>
-                </div>
+            <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+                <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Test Numbers</h2>
                 <div id="numTotalBadge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded border border-cyan-300 shadow-sm">Total: 0</div>
             </div>
-            
+
             <div class="p-4 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                     <div class="flex items-center space-x-2 w-full sm:w-auto">
@@ -84,7 +88,7 @@
 
                 <div class="flex flex-col space-y-2 pt-2">
                     <div id="numInfo" class="text-gray-600 text-[13px]">Showing 0 to 0 of 0 entries</div>
-                    <div class="flex overflow-x-auto pb-2 w-full custom-scrollbar">
+                    <div class="flex overflow-x-auto pb-2 w-full custom-scrollbar pl-1">
                         <div id="numPagination" class="flex shadow-sm rounded-md w-max"></div>
                     </div>
                 </div>
@@ -94,17 +98,16 @@
         <!-- SECTION 2: RECENT INBOUND -->
         <div class="bg-white shadow-md border-y border-gray-300 overflow-hidden">
             <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex flex-wrap justify-between items-center gap-2">
-                <div class="flex items-center space-x-3">
-                    <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Recent Inbound</h2>
-                    <div id="loadingOtp" class="loader hidden"></div>
+                <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Recent Inbound</h2>
+                <div class="flex items-center space-x-2">
                     <div id="otpTotalBadge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded border border-cyan-300 shadow-sm">Total Inbounds: 0</div>
+                    <button onclick="handleRefresh()" class="bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1.5 rounded text-sm font-bold transition flex items-center space-x-1.5 shadow-sm">
+                        <svg id="refreshIcon" class="w-4 h-4 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        <span>REFRESH</span>
+                    </button>
                 </div>
-                <button onclick="handleRefresh()" class="bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1.5 rounded text-sm font-bold transition flex items-center space-x-1.5 shadow-sm">
-                    <svg id="refreshIcon" class="w-4 h-4 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    <span>REFRESH</span>
-                </button>
             </div>
-            
+
             <div class="p-4 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                     <div class="flex items-center space-x-2 w-full sm:w-auto">
@@ -128,14 +131,14 @@
                     </div>
                 </div>
 
-                <div class="table-container border sm:border border-gray-300 rounded-sm shadow-sm">
+                <div class="table-container nowrap-table border sm:border border-gray-300 rounded-sm shadow-sm">
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr>
-                                <th class="p-3 border-r border-gray-200 w-1/4">Date ↕</th>
-                                <th class="p-3 border-r border-gray-200 w-1/3">Range ↕</th>
-                                <th class="p-3 border-r border-gray-200 w-1/4">Number ↕</th>
-                                <th class="p-3 w-1/6">Service (CLI) ↕</th>
+                                <th class="p-3 border-r border-gray-200">Date ↕</th>
+                                <th class="p-3 border-r border-gray-200">Range ↕</th>
+                                <th class="p-3 border-r border-gray-200">Number ↕</th>
+                                <th class="p-3">CLI ↕</th>
                             </tr>
                         </thead>
                         <tbody id="inboundTableBody"></tbody>
@@ -144,7 +147,7 @@
 
                 <div class="flex flex-col space-y-2 pt-2">
                     <div id="otpInfo" class="text-gray-600 text-[13px]">Showing 0 to 0 of 0 entries</div>
-                    <div class="flex overflow-x-auto pb-2 w-full custom-scrollbar">
+                    <div class="flex overflow-x-auto pb-2 w-full custom-scrollbar pl-1">
                         <div id="otpPagination" class="flex shadow-sm rounded-md w-max"></div>
                     </div>
                 </div>
@@ -153,15 +156,15 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center space-x-2 translate-y-4">
-        <svg id="toastIcon" class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center space-x-2 translate-y-4 whitespace-nowrap">
+        <svg id="toastIcon" class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
         <span id="toastMessage" class="font-medium">Copied!</span>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://bnkfvvnuhiaxaiyamttp.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJua2Z2dm51aGlheGFpeWFtdHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NzY1MzEsImV4cCI6MjEwNDM1MjUzMX0.1LkkhnBbpaQiT_dx7Hfnpffo1Bnbey_TOednu7e-MMQ';
-        
+
         const headers = {
             'apikey': SUPABASE_ANON_KEY,
             'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
@@ -180,7 +183,7 @@
         // =====================================================================
         function decodeRangeName(originalName) {
             if (!originalName) return "";
-            
+
             const monthMapping = {
                 'jan': 'J1E', 'feb': 'F', 'mar': 'M', 'apr': 'A', 'may': 'M', 'jun': 'J1N',
                 'jul': 'J2Y', 'aug': 'A', 'sep': 'S', 'oct': 'O', 'nov': 'N', 'dec': 'D'
@@ -200,10 +203,10 @@
             const match = originalName.match(endRegex);
 
             if (match) {
-                let prefix = match[1].trim(); 
-                let context = match[2]; 
-                let day = match[3]; 
-                let monthStr = match[4]; 
+                let prefix = match[1].trim();
+                let context = match[2];
+                let day = match[3];
+                let monthStr = match[4];
 
                 // Process Date
                 let mCode = monthMapping[monthStr.toLowerCase()] || monthStr.toUpperCase();
@@ -213,7 +216,7 @@
                 let newContext = "";
                 if (context) {
                     let noVowels = context.replace(/[aeiouAEIOU]/g, '');
-                    if (!noVowels) noVowels = context; 
+                    if (!noVowels) noVowels = context;
                     newContext = `(${noVowels})`;
                 }
 
@@ -249,7 +252,7 @@
             document.getElementById('otpRangeFilter').addEventListener('change', () => { otpCurrentPage = 1; renderInbounds(); });
             document.getElementById('otpSearchInput').addEventListener('input', () => { otpCurrentPage = 1; renderInbounds(); });
             document.getElementById('otpLimit').addEventListener('change', () => { otpCurrentPage = 1; renderInbounds(); });
-            
+
             let resizeTimer;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimer);
@@ -283,8 +286,7 @@
         }
 
         async function loadDataFromDatabase() {
-            document.getElementById('loadingNum').classList.remove('hidden');
-            document.getElementById('loadingOtp').classList.remove('hidden');
+            showToast("Updating...");
 
             try {
                 adminUploadedNumbers = await fetchAllRows('web_numbers', 'select=*');
@@ -293,14 +295,11 @@
                 populateRangeDropdowns();
                 renderNumbers();
                 renderInbounds();
-                showToast("Live database synchronized.");
+                showToast("Updated");
             } catch (error) {
                 console.error("Database error:", error);
-                showToast("Failed to fetch data from database.", false);
+                showToast("Update failed", false);
             }
-
-            document.getElementById('loadingNum').classList.add('hidden');
-            document.getElementById('loadingOtp').classList.add('hidden');
         }
 
         function populateRangeDropdowns() {
@@ -326,7 +325,7 @@
             const searchText = document.getElementById('numSearchInput').value.toLowerCase();
             const limit = parseInt(document.getElementById('numLimit').value);
             const tbody = document.getElementById('testNumbersTableBody');
-            tbody.innerHTML = ''; 
+            tbody.innerHTML = '';
 
             const filteredData = adminUploadedNumbers.filter(item => {
                 const matchesRange = filterRange === 'All' || item.range === filterRange;
@@ -381,7 +380,7 @@
             const searchText = document.getElementById('otpSearchInput').value.toLowerCase();
             const limit = parseInt(document.getElementById('otpLimit').value);
             const tbody = document.getElementById('inboundTableBody');
-            tbody.innerHTML = ''; 
+            tbody.innerHTML = '';
 
             const filteredData = receivedOTPs.filter(item => {
                 const matchesRange = filterRange === 'All' || item.range === filterRange;
@@ -395,7 +394,7 @@
             if(filteredData.length === 0 || limit === 0) {
                 if (filteredData.length === 0) tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-gray-500 font-medium">0 Records Found</td></tr>`;
                 document.getElementById('otpInfo').textContent = `Showing 0 to 0 of ${filteredData.length} entries`;
-                document.getElementById('otpPagination').innerHTML = ''; 
+                document.getElementById('otpPagination').innerHTML = '';
                 return;
             }
 
@@ -410,7 +409,7 @@
                 const tr = document.createElement('tr');
                 const cliName = row.cli || row.service || 'System Alert';
                 const displayRange = decodeRangeName(row.range);
-                
+
                 tr.innerHTML = `
                     <td class="p-3 text-gray-600 border-r border-gray-200">${row.date || 'N/A'}</td>
                     <td class="p-3 text-gray-700 border-r border-gray-200">${displayRange}</td>
@@ -433,14 +432,14 @@
         function buildPagination(totalPages, currentPage, containerId, callbackFn) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
-            if (totalPages <= 1) return; 
+            if (totalPages <= 1) return;
 
             // Calculate safe available width for page number buttons.
             // Reserve ~320px for First, Prev, Next, Last buttons to prevent cutoffs.
             const containerWidth = container.parentElement.clientWidth || window.innerWidth;
-            const availableWidth = containerWidth - 320; 
+            const availableWidth = containerWidth - 320;
             // 45px per button covers larger 3-to-4 digit numbers safely
-            const maxVisible = Math.max(3, Math.floor(availableWidth / 45)); 
+            const maxVisible = Math.max(3, Math.floor(availableWidth / 45));
 
             // First & Prev buttons (Always rendered, disabled if on first page)
             const prevDisabled = currentPage === 1 ? 'disabled' : '';
@@ -479,15 +478,15 @@
             navigator.clipboard.writeText(text).then(() => {
                 const iconContainer = element.querySelector('.icon-container');
                 const numText = element.querySelector('.num-text');
-                
+
                 if(iconContainer && numText) {
                     const originalSvg = iconContainer.getAttribute('data-original');
                     const checkSvg = `<svg class="w-4 h-4 ml-1.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-                    
+
                     iconContainer.innerHTML = checkSvg;
                     numText.style.color = '#10b981';
-                    
-                    setTimeout(() => { 
+
+                    setTimeout(() => {
                         iconContainer.innerHTML = originalSvg;
                         numText.style.color = '';
                     }, 3000);
@@ -502,7 +501,7 @@
 
             clearTimeout(toastTimeout);
             toastMessage.textContent = message;
-            
+
             if(isSuccess) {
                 toastIcon.classList.remove("text-yellow-400", "animate-spin");
                 toastIcon.classList.add("text-green-400");
@@ -515,7 +514,7 @@
 
             toast.classList.remove("opacity-0", "translate-y-4");
             toast.classList.add("opacity-100", "translate-y-0");
-            
+
             toastTimeout = setTimeout(() => {
                 toast.classList.remove("opacity-100", "translate-y-0");
                 toast.classList.add("opacity-0", "translate-y-4");
