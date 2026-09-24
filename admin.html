@@ -121,8 +121,8 @@
                 <div class="p-6 space-y-4">
                     
                     <div class="bg-indigo-50 border-l-4 border-indigo-500 p-3 mb-4 text-sm text-indigo-700 shadow-sm">
-                        <strong class="block mb-1">🔄 Auto-Sync Active</strong>
-                        The system automatically fetches and syncs OTPs every 1 minute in the background, matching strictly against your database numbers.
+                        <strong class="block mb-1">🔄 Auto-Sync Active (Server-Side)</strong>
+                        A Cloudflare Worker cron job fetches and syncs OTPs every 5 seconds in the background around the clock — this runs whether or not this admin page is open. Use the button below only if you want to force an extra sync right now.
                     </div>
                     
                     <button onclick="syncOtpsFromApi(false)" id="apiSyncBtn" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded text-sm font-bold transition flex items-center justify-center space-x-2 shadow-sm">
@@ -130,7 +130,7 @@
                         <span>Force Manual Sync Now</span>
                     </button>
                     
-                    <div id="apiSyncStatus" class="text-sm font-semibold text-center mt-2 p-3 rounded text-gray-500">Waiting for first sync...</div>
+                    <div id="apiSyncStatus" class="text-sm font-semibold text-center mt-2 p-3 rounded text-gray-500">Syncing happens automatically in the background.</div>
                 </div>
             </div>
         </div>
@@ -159,6 +159,7 @@
         let adminUploadedNumbers = [];
         let tempParsedData = []; 
         let toastTimeout;
+        let otpSyncInFlight = false;
 
         // =====================================================================
         // ADVANCED RANGE NAME DECODER LOGIC
@@ -258,12 +259,12 @@
         }
 
         function initAdmin() {
-            fetchAdminRanges().then(() => {
-                setTimeout(() => syncOtpsFromApi(true), 2000);
-            });
-            setInterval(() => {
-                syncOtpsFromApi(true);
-            }, 60000); 
+            // The Cloudflare Worker (lamix-proxy) now runs its own 5-second
+            // sync loop on a cron schedule, independent of this page being
+            // open. This page no longer runs its own auto-sync timer, to
+            // avoid two processes writing to web_otps at the same time.
+            // Use "Force Manual Sync Now" below for an on-demand sync.
+            fetchAdminRanges();
         }
 
         async function fetchAllRows(endpoint) {
@@ -538,6 +539,11 @@
         }
 
         async function syncOtpsFromApi(isAuto = false) {
+            // Prevent overlapping runs: if a 5s auto-sync is still mid-flight
+            // (or a manual sync is running), skip this tick instead of stacking calls.
+            if (otpSyncInFlight) return;
+            otpSyncInFlight = true;
+
             const btn = document.getElementById('apiSyncBtn');
             const status = document.getElementById('apiSyncStatus');
             
@@ -613,6 +619,8 @@
                 btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> <span>Force Manual Sync Now</span>`;
                 btn.disabled = false;
             }
+
+            otpSyncInFlight = false;
         }
 
         function showToast(message, isSuccess = true) {
