@@ -245,8 +245,9 @@
         </div>
     </div>
 
-    <!-- Toast Notification (moved up to bottom-32 so it does not overlap Android's native copy toast) -->
-    <div id="toast" class="fixed bottom-32 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center space-x-2 translate-y-4 whitespace-nowrap">
+    <!-- Toast Notification -->
+    <!-- bottom-44 pushes it well above Android's native copy toast, which is a system overlay we cannot overlap -->
+    <div id="toast" class="fixed bottom-44 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center space-x-2 translate-y-4 whitespace-nowrap">
         <span id="toastIcon" class="flex items-center justify-center w-5 h-5 flex-shrink-0"></span>
         <span id="toastMessage" class="font-medium">Copied!</span>
     </div>
@@ -470,7 +471,6 @@
 
             open() {
                 Dropdown.closeAll(this);
-                // Flip upward when there is not enough room below
                 const rect = this.btn.getBoundingClientRect();
                 const spaceBelow = window.innerHeight - rect.bottom;
                 const panelH = Math.min(260, this.panel.scrollHeight + 10);
@@ -554,7 +554,6 @@
                 'jul': 'J2Y', 'aug': 'A', 'sep': 'S', 'oct': 'O', 'nov': 'N', 'dec': 'D'
             };
 
-            // Rule 1: If it contains LX, decode ONLY the LX + Date part. (e.g. Egypt Orange [X] LX 10Aug)
             const lxRegex = /\bLX\s*(\d{1,2})([A-Za-z]{3})\b/i;
             if (lxRegex.test(originalName)) {
                 return originalName.replace(lxRegex, (match, day, monthStr) => {
@@ -563,7 +562,6 @@
                 });
             }
 
-            // Rule 2: If NO LX is present, parse Country, Operator, (Context), and Date
             const endRegex = /(.*?)(?:\s+\((.*?)\))?\s+(\d{1,2})([A-Za-z]{3})\s*$/i;
             const match = originalName.match(endRegex);
 
@@ -573,11 +571,9 @@
                 let day = match[3];
                 let monthStr = match[4];
 
-                // Process Date
                 let mCode = monthMapping[monthStr.toLowerCase()] || monthStr.toUpperCase();
                 let newDate = `${day}${mCode}`;
 
-                // Process Context (e.g. paypal -> pypl)
                 let newContext = "";
                 if (context) {
                     let noVowels = context.replace(/[aeiouAEIOU]/g, '');
@@ -585,7 +581,6 @@
                     newContext = `(${noVowels})`;
                 }
 
-                // Process Operator (Shrink last word of prefix if more than 1 word exists)
                 let prefixWords = prefix.split(/\s+/);
                 if (prefixWords.length > 1) {
                     let operator = prefixWords.pop();
@@ -621,7 +616,6 @@
             numLimitDD.setOptions(limits, '25');
             otpLimitDD.setOptions(limits, '25');
 
-            // Sortable headers (click, Enter or Space)
             document.querySelectorAll('th[data-sort]').forEach(th => {
                 th.setAttribute('tabindex', '0');
                 th.setAttribute('role', 'columnheader');
@@ -632,7 +626,6 @@
                 });
             });
 
-            // Copy: one delegated listener instead of inline onclick strings
             document.getElementById('testNumbersTableBody').addEventListener('click', (e) => {
                 const td = e.target.closest('td[data-copy]');
                 if (td) copyToClipboard(td, td.dataset.copy);
@@ -707,7 +700,6 @@
                 return [{ value: 'All', label: '-- Show All Ranges --' }]
                     .concat(raw.map(r => ({ value: r, label: decodeRangeName(r) })));
             };
-            // Keeps the current selection after a refresh if it still exists
             numRangeDD.setOptions(buildOptions(adminUploadedNumbers), numRangeDD.value);
             otpRangeDD.setOptions(buildOptions(receivedOTPs), otpRangeDD.value);
         }
@@ -829,14 +821,10 @@
             container.innerHTML = '';
             if (totalPages <= 1) return;
 
-            // Calculate safe available width for page number buttons.
-            // Reserve ~320px for First, Prev, Next, Last buttons to prevent cutoffs.
             const containerWidth = container.parentElement.clientWidth || window.innerWidth;
             const availableWidth = containerWidth - 320;
-            // 45px per button covers larger 3-to-4 digit numbers safely
             const maxVisible = Math.max(3, Math.floor(availableWidth / 45));
 
-            // First & Prev buttons (Always rendered, disabled if on first page)
             const prevDisabled = currentPage === 1 ? 'disabled' : '';
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage > 1 ? callbackFn + '(1)' : 'return false;'}" class="page-btn" ${prevDisabled}>First</button>`);
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage > 1 ? callbackFn + '(' + (currentPage - 1) + ')' : 'return false;'}" class="page-btn" ${prevDisabled}>Previous</button>`);
@@ -854,7 +842,6 @@
                 container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${i})" class="page-btn ${isActive ? 'active' : ''}">${i}</button>`);
             }
 
-            // Next & Last buttons (Always rendered, disabled if on last page)
             const nextDisabled = currentPage === totalPages ? 'disabled' : '';
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage < totalPages ? callbackFn + '(' + (currentPage + 1) + ')' : 'return false;'}" class="page-btn" ${nextDisabled}>Next</button>`);
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage < totalPages ? callbackFn + '(' + totalPages + ')' : 'return false;'}" class="page-btn" ${nextDisabled}>Last</button>`);
@@ -892,7 +879,9 @@
             return fallbackCopy(text);
         }
 
-        // Only the copy icon turns green (the number text stays as it is)
+        // Only the copy icon turns green. The toast is delayed 350ms so
+        // Android's native "Copied" toast fires first and does not stack
+        // on top of our custom toast.
         function copyToClipboard(element, text) {
             copyText(text).then(() => {
                 const iconContainer = element.querySelector('.icon-container');
@@ -903,7 +892,7 @@
                         iconContainer.innerHTML = COPY_SVG;
                     }, 3000);
                 }
-                showToast('Copied', 'success');
+                setTimeout(() => showToast('Copied', 'success'), 350);
             }).catch(err => {
                 console.error('Failed to copy: ', err);
                 showToast('Copy failed', 'error');
@@ -911,9 +900,7 @@
         }
 
         // type: 'success' | 'error' | 'loading'
-        // 'loading' shows the iOS spinner and stays visible until replaced.
         function showToast(message, type = 'success') {
-            // Backward compatibility with old showToast(msg, true/false) calls
             if (type === true) type = 'success';
             if (type === false) type = 'error';
 
@@ -938,7 +925,7 @@
             toast.classList.remove("opacity-0", "translate-y-4");
             toast.classList.add("opacity-100", "translate-y-0");
 
-            if (type === 'loading') return; // keep visible while loading
+            if (type === 'loading') return;
 
             toastTimeout = setTimeout(() => {
                 toast.classList.remove("opacity-100", "translate-y-0");
