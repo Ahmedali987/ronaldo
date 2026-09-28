@@ -21,11 +21,25 @@
         .nowrap-table table { table-layout: auto; width: max-content; min-width: 100%; }
         .nowrap-table td, .nowrap-table th { white-space: nowrap !important; }
 
-        /* Sort icon shown next to column titles */
+        /* =====================================================================
+           SORTABLE HEADERS
+           ===================================================================== */
         .sort-icon {
             display: inline-block; width: 12px; height: 12px; margin-left: 5px;
             vertical-align: -1px; color: #94a3b8; flex-shrink: 0;
         }
+        .sort-icon path { transition: stroke .15s; }
+        th[data-sort] {
+            cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+            transition: color .15s, background-color .15s;
+        }
+        th[data-sort]:hover { color: #0e7490; background-color: #f1f5f9; }
+        th[data-sort]:focus-visible { outline: 2px solid #06b6d4; outline-offset: -2px; }
+        th.sorted-asc, th.sorted-desc { color: #0e7490; }
+        th.sorted-asc  .sort-icon path:nth-child(1) { stroke: #0891b2; }
+        th.sorted-asc  .sort-icon path:nth-child(2) { stroke: #cbd5e1; }
+        th.sorted-desc .sort-icon path:nth-child(1) { stroke: #cbd5e1; }
+        th.sorted-desc .sort-icon path:nth-child(2) { stroke: #0891b2; }
 
         .page-btn {
             padding: 6px 12px; border: 1px solid #d1d5db; background: linear-gradient(to bottom, #ffffff 0%, #f3f4f6 100%);
@@ -149,9 +163,9 @@
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr>
-                                <th class="p-3 border-r border-gray-200 w-[38%]">Range<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
-                                <th class="p-3 border-r border-gray-200 w-[24%]">Prefix<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
-                                <th class="p-3 w-[38%]">Test Number<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th data-table="num" data-sort="range" class="p-3 border-r border-gray-200 w-[38%]">Range<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th data-table="num" data-sort="prefix" class="p-3 border-r border-gray-200 w-[24%]">Prefix<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th data-table="num" data-sort="number" class="p-3 w-[38%]">Test Number<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
                             </tr>
                         </thead>
                         <tbody id="testNumbersTableBody"></tbody>
@@ -201,10 +215,10 @@
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr>
-                                <th class="p-3 border-r border-gray-200">Date<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
-                                <th class="p-3 border-r border-gray-200">Range<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
-                                <th class="p-3 border-r border-gray-200">Number<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
-                                <th class="p-3">CLI<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th data-table="otp" data-sort="date" class="p-3 border-r border-gray-200">Date<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th data-table="otp" data-sort="range" class="p-3 border-r border-gray-200">Range<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th data-table="otp" data-sort="number" class="p-3 border-r border-gray-200">Number<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th data-table="otp" data-sort="cli" class="p-3">CLI<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
                             </tr>
                         </thead>
                         <tbody id="inboundTableBody"></tbody>
@@ -248,11 +262,82 @@
         // Custom dropdown instances (created on DOMContentLoaded)
         let numRangeDD, numLimitDD, otpRangeDD, otpLimitDD;
 
+        // Sort state per table. key = null means original (server) order.
+        const sortState = {
+            num: { key: null, dir: 'asc' },
+            otp: { key: null, dir: 'asc' }
+        };
+
+        // Value getters used for sorting
+        const sortGetters = {
+            num: {
+                range:  r => decodeRangeName(r.range),
+                prefix: r => r.prefix,
+                number: r => r.number
+            },
+            otp: {
+                date:   r => r.date,
+                range:  r => decodeRangeName(r.range),
+                number: r => r.number,
+                cli:    r => r.cli || r.service || 'System Alert'
+            }
+        };
+
+        const COPY_SVG = `<svg class="w-4 h-4 ml-1.5 text-gray-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`;
+        const CHECK_SVG = `<svg class="w-4 h-4 ml-1.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+
         // =====================================================================
         // HELPERS
         // =====================================================================
+        // Every database value is passed through this before going into innerHTML
         function escapeHtml(str) {
             return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // =====================================================================
+        // SORTING
+        // =====================================================================
+        function compareValues(a, b, isDate) {
+            const sa = String(a ?? '');
+            const sb = String(b ?? '');
+            if (isDate) {
+                const ta = Date.parse(sa), tb = Date.parse(sb);
+                if (!isNaN(ta) && !isNaN(tb)) return ta - tb;
+            }
+            return sa.localeCompare(sb, undefined, { numeric: true, sensitivity: 'base' });
+        }
+
+        function sortRows(rows, table) {
+            const s = sortState[table];
+            if (!s.key) return rows;
+            const getter = sortGetters[table][s.key];
+            const mult = s.dir === 'asc' ? 1 : -1;
+            const isDate = s.key === 'date';
+            return [...rows].sort((a, b) => mult * compareValues(getter(a), getter(b), isDate));
+        }
+
+        // Cycle: ascending -> descending -> original order
+        function handleSort(th) {
+            if (isLoading) return;
+            const table = th.dataset.table;
+            const key = th.dataset.sort;
+            const s = sortState[table];
+
+            if (s.key !== key) { s.key = key; s.dir = 'asc'; }
+            else if (s.dir === 'asc') { s.dir = 'desc'; }
+            else { s.key = null; s.dir = 'asc'; }
+
+            document.querySelectorAll(`th[data-table="${table}"]`).forEach(h => {
+                h.classList.remove('sorted-asc', 'sorted-desc');
+                h.setAttribute('aria-sort', 'none');
+            });
+            if (s.key) {
+                th.classList.add(s.dir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                th.setAttribute('aria-sort', s.dir === 'asc' ? 'ascending' : 'descending');
+            }
+
+            if (table === 'num') { numCurrentPage = 1; renderNumbers(); }
+            else { otpCurrentPage = 1; renderInbounds(); }
         }
 
         // =====================================================================
@@ -470,6 +555,23 @@
             numLimitDD.setOptions(limits, '25');
             otpLimitDD.setOptions(limits, '25');
 
+            // Sortable headers (click, Enter or Space)
+            document.querySelectorAll('th[data-sort]').forEach(th => {
+                th.setAttribute('tabindex', '0');
+                th.setAttribute('role', 'columnheader');
+                th.setAttribute('aria-sort', 'none');
+                th.addEventListener('click', () => handleSort(th));
+                th.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort(th); }
+                });
+            });
+
+            // Copy: one delegated listener instead of inline onclick strings
+            document.getElementById('testNumbersTableBody').addEventListener('click', (e) => {
+                const td = e.target.closest('td[data-copy]');
+                if (td) copyToClipboard(td, td.dataset.copy);
+            });
+
             loadDataFromDatabase();
 
             document.getElementById('numSearchInput').addEventListener('input', () => { numCurrentPage = 1; renderNumbers(); });
@@ -551,12 +653,13 @@
             const tbody = document.getElementById('testNumbersTableBody');
             tbody.innerHTML = '';
 
-            const filteredData = adminUploadedNumbers.filter(item => {
+            const filtered = adminUploadedNumbers.filter(item => {
                 const matchesRange = filterRange === 'All' || item.range === filterRange;
                 const decodedRange = decodeRangeName(item.range).toLowerCase();
                 const matchesSearch = searchText === '' || decodedRange.includes(searchText) || (item.range && item.range.toLowerCase().includes(searchText)) || (item.prefix && item.prefix.toLowerCase().includes(searchText)) || (item.number && item.number.toLowerCase().includes(searchText));
                 return matchesRange && matchesSearch;
             });
+            const filteredData = sortRows(filtered, 'num');
 
             document.getElementById('numTotalBadge').textContent = `Total: ${filteredData.length}`;
 
@@ -574,18 +677,17 @@
             const startIndex = (numCurrentPage - 1) * limit;
             const paginatedData = filteredData.slice(startIndex, startIndex + limit);
 
-            const copySvg = `<svg class="w-4 h-4 ml-1.5 text-gray-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>`;
-
             paginatedData.forEach(row => {
                 const tr = document.createElement('tr');
-                const displayRange = decodeRangeName(row.range);
+                const displayRange = escapeHtml(decodeRangeName(row.range));
+                const safeNumber = escapeHtml(row.number);
                 tr.innerHTML = `
                     <td class="p-3 text-gray-700 border-r border-gray-200">${displayRange}</td>
-                    <td class="p-3 text-gray-700 border-r border-gray-200">${row.prefix}</td>
-                    <td class="p-3 font-bold text-gray-900 cursor-pointer select-none group" onclick="copyToClipboard(this, '${row.number}')">
+                    <td class="p-3 text-gray-700 border-r border-gray-200">${escapeHtml(row.prefix)}</td>
+                    <td class="p-3 font-bold text-gray-900 cursor-pointer select-none group" data-copy="${safeNumber}">
                         <div class="flex items-center">
-                            <span class="num-text">${row.number}</span>
-                            <span class="icon-container" data-original='${copySvg}'>${copySvg}</span>
+                            <span class="num-text">${safeNumber}</span>
+                            <span class="icon-container">${COPY_SVG}</span>
                         </div>
                     </td>
                 `;
@@ -607,12 +709,13 @@
             const tbody = document.getElementById('inboundTableBody');
             tbody.innerHTML = '';
 
-            const filteredData = receivedOTPs.filter(item => {
+            const filtered = receivedOTPs.filter(item => {
                 const matchesRange = filterRange === 'All' || item.range === filterRange;
                 const decodedRange = decodeRangeName(item.range).toLowerCase();
                 const matchesSearch = searchText === '' || decodedRange.includes(searchText) || (item.range && item.range.toLowerCase().includes(searchText)) || (item.number && item.number.toLowerCase().includes(searchText)) || (item.cli && item.cli.toLowerCase().includes(searchText));
                 return matchesRange && matchesSearch;
             });
+            const filteredData = sortRows(filtered, 'otp');
 
             document.getElementById('otpTotalBadge').textContent = `Total Inbounds: ${filteredData.length}`;
 
@@ -636,10 +739,10 @@
                 const displayRange = decodeRangeName(row.range);
 
                 tr.innerHTML = `
-                    <td class="p-3 text-gray-600 border-r border-gray-200">${row.date || 'N/A'}</td>
-                    <td class="p-3 text-gray-700 border-r border-gray-200">${displayRange}</td>
-                    <td class="p-3 font-bold text-gray-900 border-r border-gray-200">${row.number || 'N/A'}</td>
-                    <td class="p-3 font-semibold text-gray-900 uppercase">${cliName}</td>
+                    <td class="p-3 text-gray-600 border-r border-gray-200">${escapeHtml(row.date || 'N/A')}</td>
+                    <td class="p-3 text-gray-700 border-r border-gray-200">${escapeHtml(displayRange)}</td>
+                    <td class="p-3 font-bold text-gray-900 border-r border-gray-200">${escapeHtml(row.number || 'N/A')}</td>
+                    <td class="p-3 font-semibold text-gray-900 uppercase">${escapeHtml(cliName)}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -695,21 +798,49 @@
             loadDataFromDatabase();
         }
 
+        // =====================================================================
+        // COPY (modern clipboard API with a fallback for in-app browsers / HTTP)
+        // =====================================================================
+        function fallbackCopy(text) {
+            return new Promise((resolve, reject) => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px;';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                ta.setSelectionRange(0, text.length);
+                let ok = false;
+                try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+                document.body.removeChild(ta);
+                ok ? resolve() : reject(new Error('execCommand copy failed'));
+            });
+        }
+
+        function copyText(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+            }
+            return fallbackCopy(text);
+        }
+
         // Only the copy icon turns green (the number text stays as it is)
         function copyToClipboard(element, text) {
-            navigator.clipboard.writeText(text).then(() => {
+            copyText(text).then(() => {
                 const iconContainer = element.querySelector('.icon-container');
-                if (!iconContainer) return;
-
-                const originalSvg = iconContainer.getAttribute('data-original');
-                const checkSvg = `<svg class="w-4 h-4 ml-1.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-
-                iconContainer.innerHTML = checkSvg;
-                clearTimeout(iconContainer._resetTimer);
-                iconContainer._resetTimer = setTimeout(() => {
-                    iconContainer.innerHTML = originalSvg;
-                }, 3000);
-            }).catch(err => { console.error('Failed to copy: ', err); });
+                if (iconContainer) {
+                    iconContainer.innerHTML = CHECK_SVG;
+                    clearTimeout(iconContainer._resetTimer);
+                    iconContainer._resetTimer = setTimeout(() => {
+                        iconContainer.innerHTML = COPY_SVG;
+                    }, 3000);
+                }
+                showToast('Copied', 'success');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showToast('Copy failed', 'error');
+            });
         }
 
         // type: 'success' | 'error' | 'loading'
