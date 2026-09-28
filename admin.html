@@ -11,8 +11,35 @@
         th { background-color: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; border-bottom: 2px solid #e2e8f0; }
         td { border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 13px; word-break: break-word; overflow-wrap: break-word; white-space: normal !important; }
         .hidden-view { display: none !important; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #06b6d4; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* =====================================================================
+           iOS STYLE ACTIVITY INDICATOR (12 fading ticks) — matches index.html
+           ===================================================================== */
+        .ios-spinner {
+            position: relative; display: inline-block;
+            width: var(--s, 20px); height: var(--s, 20px); flex-shrink: 0;
+        }
+        .ios-spinner i {
+            position: absolute; left: 50%; top: 0; width: 8%; height: 26%; margin-left: -4%;
+            border-radius: 50px; background: currentColor; opacity: 0.15;
+            transform-origin: 50% 192%; animation: ios-fade 1s linear infinite;
+        }
+        .ios-spinner i:nth-child(1)  { transform: rotate(0deg);   animation-delay: -1s; }
+        .ios-spinner i:nth-child(2)  { transform: rotate(30deg);  animation-delay: -0.9167s; }
+        .ios-spinner i:nth-child(3)  { transform: rotate(60deg);  animation-delay: -0.8333s; }
+        .ios-spinner i:nth-child(4)  { transform: rotate(90deg);  animation-delay: -0.75s; }
+        .ios-spinner i:nth-child(5)  { transform: rotate(120deg); animation-delay: -0.6667s; }
+        .ios-spinner i:nth-child(6)  { transform: rotate(150deg); animation-delay: -0.5833s; }
+        .ios-spinner i:nth-child(7)  { transform: rotate(180deg); animation-delay: -0.5s; }
+        .ios-spinner i:nth-child(8)  { transform: rotate(210deg); animation-delay: -0.4167s; }
+        .ios-spinner i:nth-child(9)  { transform: rotate(240deg); animation-delay: -0.3333s; }
+        .ios-spinner i:nth-child(10) { transform: rotate(270deg); animation-delay: -0.25s; }
+        .ios-spinner i:nth-child(11) { transform: rotate(300deg); animation-delay: -0.1667s; }
+        .ios-spinner i:nth-child(12) { transform: rotate(330deg); animation-delay: -0.0833s; }
+        @keyframes ios-fade { 0% { opacity: 1; } 100% { opacity: 0.15; } }
+
+        /* Native datetime-local input polish */
+        input[type="datetime-local"] { color-scheme: light; }
     </style>
 </head>
 <body class="bg-gray-200 text-gray-800 font-sans pb-10 min-h-screen">
@@ -51,7 +78,37 @@
     </nav>
 
     <div class="max-w-7xl mx-auto p-2 sm:p-4 space-y-6 mt-4">
-        
+
+        <!-- ADMIN: LAST UPDATED TIMESTAMP -->
+        <div class="bg-white shadow-md rounded border border-gray-300 overflow-hidden">
+            <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex items-center justify-between">
+                <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Last Updated Timestamp</h2>
+                <div id="tsCurrentBadge" class="text-xs font-bold px-3 py-1 rounded border shadow-sm bg-cyan-100 text-cyan-800 border-cyan-300">Current: —</div>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-gray-600">This timestamp is shown publicly on the user page under the "RonaldoSmS Bot" title. It does not update automatically unless you click <strong>Use Current Time</strong> or <strong>Save Timestamp</strong> with <em>auto-update</em> enabled on uploads.</p>
+
+                <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+                    <div class="flex-1 w-full">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Custom Date &amp; Time</label>
+                        <input type="datetime-local" id="customTimestamp" step="1" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-cyan-500 shadow-sm">
+                    </div>
+                    <button onclick="useCurrentTime()" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded text-sm font-bold transition shadow-sm whitespace-nowrap">
+                        Use Current Time
+                    </button>
+                    <button onclick="saveTimestamp()" id="saveTsBtn" class="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded text-sm font-bold transition shadow-sm flex items-center justify-center gap-2 whitespace-nowrap">
+                        <span id="saveTsSpinner" class="hidden"></span>
+                        <span id="saveTsLabel">Save Timestamp</span>
+                    </button>
+                </div>
+
+                <label class="inline-flex items-center gap-2 text-sm text-gray-700 select-none">
+                    <input type="checkbox" id="autoUpdateOnUpload" class="w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500" checked>
+                    <span>Auto-update timestamp when I upload new numbers</span>
+                </label>
+            </div>
+        </div>
+
         <!-- ADMIN: UPLOAD SECTION -->
         <div class="bg-white shadow-md rounded border border-gray-300 overflow-hidden">
             <div class="bg-gray-100 border-b border-gray-300 px-4 py-3">
@@ -71,9 +128,9 @@
                         <h3 class="font-bold text-yellow-800">Confirm Upload Details:</h3>
                         <span class="bg-yellow-200 text-yellow-900 text-xs font-bold px-2 py-1 rounded">New Unique Parsed: <span id="confirmValidCount">0</span></span>
                     </div>
-                    
+
                     <p class="text-xs text-yellow-700 mb-2">The following ranges were detected (shown decoded). You can edit the range names before uploading:</p>
-                    
+
                     <ul id="confirmRangeList" class="space-y-2 mb-4 max-h-48 overflow-y-auto"></ul>
 
                     <div class="flex space-x-3 border-t border-yellow-200 pt-3">
@@ -85,13 +142,13 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+
             <!-- MANAGE RANGES -->
             <div class="bg-white shadow-md rounded border border-gray-300 overflow-hidden flex flex-col max-h-[600px]">
                 <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex justify-between items-center shrink-0">
                     <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Manage Database Ranges</h2>
                     <div class="flex items-center space-x-2">
-                        <div id="loadingRanges" class="loader hidden"></div>
+                        <div id="loadingRanges" class="hidden text-gray-500"></div>
                         <button onclick="deleteSelectedRanges()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-bold transition shadow-sm border border-red-700">Delete Selected</button>
                         <button onclick="deleteAllRanges()" class="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded text-xs font-bold transition shadow-sm">Delete All</button>
                     </div>
@@ -119,17 +176,17 @@
                     <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Lamix API Sync</h2>
                 </div>
                 <div class="p-6 space-y-4">
-                    
+
                     <div class="bg-indigo-50 border-l-4 border-indigo-500 p-3 mb-4 text-sm text-indigo-700 shadow-sm">
                         <strong class="block mb-1">🔄 Auto-Sync Active (Server-Side)</strong>
                         A Cloudflare Worker cron job fetches and syncs OTPs every 5 seconds in the background around the clock — this runs whether or not this admin page is open. Use the button below only if you want to force an extra sync right now.
                     </div>
-                    
+
                     <button onclick="syncOtpsFromApi(false)" id="apiSyncBtn" class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded text-sm font-bold transition flex items-center justify-center space-x-2 shadow-sm">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                         <span>Force Manual Sync Now</span>
                     </button>
-                    
+
                     <div id="apiSyncStatus" class="text-sm font-semibold text-center mt-2 p-3 rounded text-gray-500">Syncing happens automatically in the background.</div>
                 </div>
             </div>
@@ -137,18 +194,18 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center space-x-2 translate-y-4">
-        <svg id="toastIcon" class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center space-x-2 translate-y-4 whitespace-nowrap">
+        <span id="toastIcon" class="flex items-center justify-center w-5 h-5 flex-shrink-0 text-green-400"></span>
         <span id="toastMessage" class="font-medium">Success!</span>
     </div>
 
     <script>
-        const LAMIX_API_TOKEN = 'D463wOy8iV8JLsesSz12G-rp1XXKAwlB3mvVWZeWNL0'; 
+        const LAMIX_API_TOKEN = 'D463wOy8iV8JLsesSz12G-rp1XXKAwlB3mvVWZeWNL0';
         const PRIVATE_PROXY_URL = 'https://lamix-proxy.ahmedalirutf.workers.dev';
 
         const SUPABASE_URL = 'https://bnkfvvnuhiaxaiyamttp.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJua2Z2dm51aGlheGFpeWFtdHRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NzY1MzEsImV4cCI6MjEwNDM1MjUzMX0.1LkkhnBbpaQiT_dx7Hfnpffo1Bnbey_TOednu7e-MMQ';
-        
+
         const headers = {
             'apikey': SUPABASE_ANON_KEY,
             'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
@@ -157,16 +214,24 @@
         };
 
         let adminUploadedNumbers = [];
-        let tempParsedData = []; 
+        let tempParsedData = [];
         let toastTimeout;
         let otpSyncInFlight = false;
+        let currentTimestampValue = null;
+
+        // =====================================================================
+        // iOS SPINNER HELPER
+        // =====================================================================
+        function iosSpinner(size = 20) {
+            return `<span class="ios-spinner" style="--s:${size}px">${'<i></i>'.repeat(12)}</span>`;
+        }
 
         // =====================================================================
         // ADVANCED RANGE NAME DECODER LOGIC
         // =====================================================================
         function decodeRangeName(originalName) {
             if (!originalName) return "";
-            
+
             const monthMapping = {
                 'jan': 'J1E', 'feb': 'F', 'mar': 'M', 'apr': 'A', 'may': 'M', 'jun': 'J1N',
                 'jul': 'J2Y', 'aug': 'A', 'sep': 'S', 'oct': 'O', 'nov': 'N', 'dec': 'D'
@@ -184,10 +249,10 @@
             const match = originalName.match(endRegex);
 
             if (match) {
-                let prefix = match[1].trim(); 
-                let context = match[2]; 
-                let day = match[3]; 
-                let monthStr = match[4]; 
+                let prefix = match[1].trim();
+                let context = match[2];
+                let day = match[3];
+                let monthStr = match[4];
 
                 let mCode = monthMapping[monthStr.toLowerCase()] || monthStr.toUpperCase();
                 let newDate = `${day}${mCode}`;
@@ -195,7 +260,7 @@
                 let newContext = "";
                 if (context) {
                     let noVowels = context.replace(/[aeiouAEIOU]/g, '');
-                    if (!noVowels) noVowels = context; 
+                    if (!noVowels) noVowels = context;
                     newContext = `(${noVowels})`;
                 }
 
@@ -243,7 +308,7 @@
         function checkLogin() {
             const u = document.getElementById('adminUser').value.trim();
             const p = document.getElementById('adminPass').value.trim();
-            
+
             if (u === 'Mohsin' && p === 'Moshin123') {
                 sessionStorage.setItem('admin_logged_in', 'true');
                 document.getElementById('loginModal').classList.add('hidden');
@@ -259,14 +324,136 @@
         }
 
         function initAdmin() {
-            // The Cloudflare Worker (lamix-proxy) now runs its own 5-second
-            // sync loop on a cron schedule, independent of this page being
-            // open. This page no longer runs its own auto-sync timer, to
-            // avoid two processes writing to web_otps at the same time.
-            // Use "Force Manual Sync Now" below for an on-demand sync.
             fetchAdminRanges();
+            fetchCurrentTimestamp();
         }
 
+        // =====================================================================
+        // LAST UPDATED TIMESTAMP MANAGEMENT
+        // =====================================================================
+        function formatForDisplay(value) {
+            if (!value) return '—';
+            const d = new Date(value);
+            if (isNaN(d.getTime())) return String(value);
+            return d.toLocaleString(undefined, {
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        // Convert an ISO string to the format required by <input type="datetime-local">
+        function toLocalInputValue(date) {
+            const pad = (n) => String(n).padStart(2, '0');
+            const y = date.getFullYear();
+            const mo = pad(date.getMonth() + 1);
+            const d = pad(date.getDate());
+            const h = pad(date.getHours());
+            const mi = pad(date.getMinutes());
+            const s = pad(date.getSeconds());
+            return `${y}-${mo}-${d}T${h}:${mi}:${s}`;
+        }
+
+        async function fetchCurrentTimestamp() {
+            const badge = document.getElementById('tsCurrentBadge');
+            badge.textContent = 'Current: Loading...';
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/web_settings?id=eq.1&select=last_updated`, { headers });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const rows = await res.json();
+                currentTimestampValue = (rows && rows[0]) ? rows[0].last_updated : null;
+
+                badge.textContent = `Current: ${formatForDisplay(currentTimestampValue)}`;
+                badge.className = "text-xs font-bold px-3 py-1 rounded border shadow-sm bg-cyan-100 text-cyan-800 border-cyan-300";
+
+                if (currentTimestampValue) {
+                    const d = new Date(currentTimestampValue);
+                    if (!isNaN(d.getTime())) {
+                        document.getElementById('customTimestamp').value = toLocalInputValue(d);
+                    }
+                } else {
+                    document.getElementById('customTimestamp').value = toLocalInputValue(new Date());
+                }
+            } catch (err) {
+                console.error('Failed to load timestamp:', err);
+                badge.textContent = 'Current: Unavailable';
+                badge.className = "text-xs font-bold px-3 py-1 rounded border shadow-sm bg-red-100 text-red-700 border-red-300";
+            }
+        }
+
+        function useCurrentTime() {
+            document.getElementById('customTimestamp').value = toLocalInputValue(new Date());
+            showToast('Time field set to now — click Save', 'success');
+        }
+
+        async function saveTimestamp() {
+            const input = document.getElementById('customTimestamp');
+            const btn = document.getElementById('saveTsBtn');
+            const spinner = document.getElementById('saveTsSpinner');
+            const label = document.getElementById('saveTsLabel');
+
+            if (!input.value) {
+                showToast('Please choose a date & time first.', 'error');
+                return;
+            }
+
+            const isoValue = new Date(input.value).toISOString();
+
+            btn.disabled = true;
+            spinner.innerHTML = iosSpinner(16);
+            spinner.classList.remove('hidden');
+            spinner.classList.add('flex');
+            label.textContent = 'Saving...';
+
+            try {
+                // Upsert into web_settings (id=1)
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/web_settings`, {
+                    method: 'POST',
+                    headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=representation' },
+                    body: JSON.stringify([{ id: 1, last_updated: isoValue }])
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                currentTimestampValue = isoValue;
+                const badge = document.getElementById('tsCurrentBadge');
+                badge.textContent = `Current: ${formatForDisplay(isoValue)}`;
+                badge.className = "text-xs font-bold px-3 py-1 rounded border shadow-sm bg-green-100 text-green-800 border-green-300";
+                showToast('Timestamp saved successfully', 'success');
+            } catch (err) {
+                console.error('Save timestamp error:', err);
+                showToast('Failed to save timestamp', 'error');
+            } finally {
+                btn.disabled = false;
+                spinner.classList.add('hidden');
+                spinner.classList.remove('flex');
+                spinner.innerHTML = '';
+                label.textContent = 'Save Timestamp';
+            }
+        }
+
+        // Called internally after uploads / deletions if auto-update is enabled
+        async function bumpTimestampIfAuto() {
+            const auto = document.getElementById('autoUpdateOnUpload');
+            if (!auto || !auto.checked) return;
+            try {
+                const isoValue = new Date().toISOString();
+                await fetch(`${SUPABASE_URL}/rest/v1/web_settings`, {
+                    method: 'POST',
+                    headers: { ...headers, 'Prefer': 'resolution=merge-duplicates,return=representation' },
+                    body: JSON.stringify([{ id: 1, last_updated: isoValue }])
+                });
+                currentTimestampValue = isoValue;
+                const badge = document.getElementById('tsCurrentBadge');
+                badge.textContent = `Current: ${formatForDisplay(isoValue)}`;
+                badge.className = "text-xs font-bold px-3 py-1 rounded border shadow-sm bg-green-100 text-green-800 border-green-300";
+                document.getElementById('customTimestamp').value = toLocalInputValue(new Date());
+            } catch (err) {
+                console.warn('Auto timestamp bump failed:', err);
+            }
+        }
+
+        // =====================================================================
+        // ADMIN DATA FETCH
+        // =====================================================================
         async function fetchAllRows(endpoint) {
             let allData = [];
             let limit = 1000;
@@ -288,38 +475,46 @@
         }
 
         async function fetchAdminRanges() {
-            document.getElementById('loadingRanges').classList.remove('hidden');
+            const loader = document.getElementById('loadingRanges');
+            loader.innerHTML = iosSpinner(18);
+            loader.classList.remove('hidden');
+            loader.classList.add('inline-flex', 'items-center', 'text-gray-500');
             try {
                 adminUploadedNumbers = await fetchAllRows('web_numbers');
                 renderAdminRanges(adminUploadedNumbers);
             } catch (error) {
-                showToast("Failed to fetch database ranges.", false);
+                showToast("Failed to fetch database ranges.", 'error');
             }
-            document.getElementById('loadingRanges').classList.add('hidden');
+            loader.classList.add('hidden');
+            loader.classList.remove('inline-flex', 'items-center');
+            loader.innerHTML = '';
         }
 
+        // =====================================================================
+        // UPLOAD FLOW
+        // =====================================================================
         function processUpload() {
             const fileInput = document.getElementById('fileInput');
             if (fileInput.files.length === 0) {
-                showToast("Please select a .txt or .csv file first.", false);
+                showToast("Please select a .txt or .csv file first.", 'error');
                 return;
             }
 
             const file = fileInput.files[0];
-            const defaultRangeName = file.name.replace(/\.[^/.]+$/, ""); 
+            const defaultRangeName = file.name.replace(/\.[^/.]+$/, "");
 
             const reader = new FileReader();
             reader.onload = function(e) {
                 const lines = e.target.result.split(/\r?\n/);
                 tempParsedData = [];
-                
+
                 let colRange = -1, colPrefix = -1, colNumber = -1;
                 let isHeader = true;
 
                 lines.forEach((line) => {
                     const trimmedLine = line.trim();
-                    if (!trimmedLine) return; 
-                    
+                    if (!trimmedLine) return;
+
                     let parts = trimmedLine.split('\t');
                     if (parts.length < 2) parts = trimmedLine.split(',');
 
@@ -331,7 +526,7 @@
                             colRange = headersArray.indexOf('range');
                             colPrefix = headersArray.indexOf('prefix');
                             colNumber = headersArray.indexOf('number');
-                            return; 
+                            return;
                         }
                     }
 
@@ -343,12 +538,12 @@
                         if (colRange !== -1 && parts[colRange]) range = parts[colRange].trim();
                         prefix = parts[colPrefix] ? parts[colPrefix].trim() : "";
                         number = parts[colNumber] ? parts[colNumber].trim() : "";
-                    } 
+                    }
                     else if (parts.length >= 3 && !trimmedLine.toLowerCase().includes('prefix')) {
                         range = parts[0].trim();
                         prefix = parts[1].trim();
                         number = parts[2].trim();
-                    } 
+                    }
                     else if (parts.length === 2 && !trimmedLine.toLowerCase().includes('prefix')) {
                         prefix = parts[0].trim();
                         number = parts[1].trim();
@@ -360,7 +555,7 @@
                 });
 
                 if (tempParsedData.length === 0) {
-                    showToast("No valid data found in file.", false);
+                    showToast("No valid data found in file.", 'error');
                     return;
                 }
 
@@ -375,16 +570,16 @@
 
             const uniqueParsed = tempParsedData.filter(item => !existingSet.has(String(item.number).replace(/\D/g, '')));
             const duplicateCount = tempParsedData.length - uniqueParsed.length;
-            tempParsedData = uniqueParsed; 
+            tempParsedData = uniqueParsed;
 
             if (tempParsedData.length === 0) {
-                showToast(`All ${duplicateCount} numbers in this file already exist in the database!`, false);
+                showToast(`All ${duplicateCount} numbers in this file already exist in the database!`, 'error');
                 return;
             }
 
             const confirmList = document.getElementById('confirmRangeList');
             confirmList.innerHTML = '';
-            
+
             const rangeGroups = {};
             tempParsedData.forEach(item => {
                 rangeGroups[item.range] = (rangeGroups[item.range] || 0) + 1;
@@ -415,14 +610,14 @@
                 tempParsedData.forEach(item => {
                     if (item.range === oldName) item.range = cleanName;
                 });
-                renderConfirmBox(); 
+                renderConfirmBox();
             }
         };
 
         async function finalizeUpload() {
             if (tempParsedData.length > 0) {
-                showToast("Uploading unique numbers to database...", true);
-                
+                showToast("Uploading unique numbers to database...", 'loading');
+
                 try {
                     const chunkSize = 1000;
                     for (let i = 0; i < tempParsedData.length; i += chunkSize) {
@@ -432,18 +627,19 @@
                             headers: headers,
                             body: JSON.stringify(chunk)
                         });
-                        
+
                         if (!res.ok) {
                             throw new Error("Upload failed on chunk " + (Math.floor(i/chunkSize) + 1));
                         }
                     }
 
-                    showToast(`Successfully uploaded ${tempParsedData.length} unique numbers.`);
-                    cancelUpload(); 
-                    fetchAdminRanges(); 
+                    showToast(`Successfully uploaded ${tempParsedData.length} unique numbers.`, 'success');
+                    await bumpTimestampIfAuto();
+                    cancelUpload();
+                    fetchAdminRanges();
                     document.getElementById('fileInput').value = "";
                 } catch (err) {
-                    showToast(`Database Error: ${err.message}`, false);
+                    showToast(`Database Error: ${err.message}`, 'error');
                 }
             }
         }
@@ -453,10 +649,13 @@
             document.getElementById('uploadConfirmBox').classList.add('hidden-view');
         }
 
+        // =====================================================================
+        // RANGE MANAGEMENT
+        // =====================================================================
         function renderAdminRanges(allNumbers) {
             const tbody = document.getElementById('adminRangesTableBody');
             tbody.innerHTML = '';
-            
+
             const rangesCount = {};
             allNumbers.forEach(item => { rangesCount[item.range] = (rangesCount[item.range] || 0) + 1; });
             const uniqueRanges = Object.keys(rangesCount).sort();
@@ -495,60 +694,61 @@
             }
 
             if(confirm(`Are you sure you want to delete ${checkedBoxes.length} selected range(s) and their numbers?`)) {
-                showToast("Deleting selected ranges...", true);
+                showToast("Deleting selected ranges...", 'loading');
                 try {
                     for (const cb of checkedBoxes) {
                         const rangeName = cb.value;
                         await fetch(`${SUPABASE_URL}/rest/v1/web_numbers?range=eq.${encodeURIComponent(rangeName)}`, { method: 'DELETE', headers });
                         await fetch(`${SUPABASE_URL}/rest/v1/web_otps?range=eq.${encodeURIComponent(rangeName)}`, { method: 'DELETE', headers });
                     }
-                    showToast("Selected ranges deleted successfully.");
+                    showToast("Selected ranges deleted successfully.", 'success');
                     fetchAdminRanges();
                 } catch (err) {
-                    showToast("Failed to delete selected ranges.", false);
+                    showToast("Failed to delete selected ranges.", 'error');
                 }
             }
         }
 
         async function deleteRange(rangeName) {
             if(confirm(`Are you sure you want to delete ALL numbers in "${rangeName}"?`)) {
-                showToast("Deleting...", true);
+                showToast("Deleting...", 'loading');
                 try {
                     await fetch(`${SUPABASE_URL}/rest/v1/web_numbers?range=eq.${encodeURIComponent(rangeName)}`, { method: 'DELETE', headers });
                     await fetch(`${SUPABASE_URL}/rest/v1/web_otps?range=eq.${encodeURIComponent(rangeName)}`, { method: 'DELETE', headers });
-                    showToast(`Range "${rangeName}" deleted from Supabase.`);
+                    showToast(`Range "${rangeName}" deleted from Supabase.`, 'success');
                     fetchAdminRanges();
                 } catch (err) {
-                    showToast("Failed to delete.", false);
+                    showToast("Failed to delete.", 'error');
                 }
             }
         }
 
         async function deleteAllRanges() {
             if(confirm('🚨 WARNING: Are you sure you want to delete ALL ranges and ALL numbers from the database? This action cannot be undone!')) {
-                showToast("Wiping database...", true);
+                showToast("Wiping database...", 'loading');
                 try {
                     await fetch(`${SUPABASE_URL}/rest/v1/web_numbers?id=not.is.null`, { method: 'DELETE', headers });
                     await fetch(`${SUPABASE_URL}/rest/v1/web_otps?id=not.is.null`, { method: 'DELETE', headers });
-                    showToast(`Database completely wiped.`);
+                    showToast(`Database completely wiped.`, 'success');
                     fetchAdminRanges();
                 } catch (err) {
-                    showToast("Failed to delete ranges.", false);
+                    showToast("Failed to delete ranges.", 'error');
                 }
             }
         }
 
+        // =====================================================================
+        // LAMIX API SYNC
+        // =====================================================================
         async function syncOtpsFromApi(isAuto = false) {
-            // Prevent overlapping runs: if a 5s auto-sync is still mid-flight
-            // (or a manual sync is running), skip this tick instead of stacking calls.
             if (otpSyncInFlight) return;
             otpSyncInFlight = true;
 
             const btn = document.getElementById('apiSyncBtn');
             const status = document.getElementById('apiSyncStatus');
-            
+
             if (!isAuto) {
-                btn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> <span>Syncing...</span>`;
+                btn.innerHTML = `${iosSpinner(18)} <span>Syncing...</span>`;
                 btn.disabled = true;
                 status.classList.add('hidden-view');
             } else {
@@ -561,14 +761,14 @@
 
                 const targetUrl = `https://panel.lamix.org/api/v1/messages?limit=1000&token=${LAMIX_API_TOKEN}`;
                 const proxyUrl = `${PRIVATE_PROXY_URL}/?url=${encodeURIComponent(targetUrl)}`;
-                
+
                 const lamixRes = await fetch(proxyUrl);
                 if (!lamixRes.ok) throw new Error(`Lamix Server Error (HTTP ${lamixRes.status}).`);
-                
+
                 const lamixData = await lamixRes.json();
                 if (lamixData.error) throw new Error(`Lamix Error: ${lamixData.error}`);
 
-                const records = lamixData.records || []; 
+                const records = lamixData.records || [];
 
                 const validNumbersSet = new Set(adminUploadedNumbers.map(n => String(n.number).replace(/\D/g, '')));
 
@@ -583,16 +783,16 @@
                         return false;
                     })
                     .map(msg => ({
-                        date: msg.time ? msg.time.replace('T', ' ').substring(0, 19) : new Date().toISOString().replace('T', ' ').substring(0, 19), 
+                        date: msg.time ? msg.time.replace('T', ' ').substring(0, 19) : new Date().toISOString().replace('T', ' ').substring(0, 19),
                         range: msg.range || 'Unknown Range',
                         number: msg.number,
-                        cli: msg.cli, 
+                        cli: msg.cli,
                         otpMessage: msg.content
                     }));
 
                 if (otpsToInsert.length > 0) {
                     await fetch(`${SUPABASE_URL}/rest/v1/web_otps?number=neq.null`, { method: 'DELETE', headers });
-                    
+
                     const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/web_otps`, {
                         method: 'POST',
                         headers: headers,
@@ -623,27 +823,37 @@
             otpSyncInFlight = false;
         }
 
-        function showToast(message, isSuccess = true) {
+        // =====================================================================
+        // TOAST (matches index.html style)
+        // type: 'success' | 'error' | 'loading'
+        // =====================================================================
+        function showToast(message, type = 'success') {
+            if (type === true) type = 'success';
+            if (type === false) type = 'error';
+
             const toast = document.getElementById("toast");
             const toastMessage = document.getElementById("toastMessage");
             const toastIcon = document.getElementById("toastIcon");
 
             clearTimeout(toastTimeout);
             toastMessage.textContent = message;
-            
-            if(isSuccess) {
-                toastIcon.classList.remove("text-yellow-400", "animate-spin");
-                toastIcon.classList.add("text-green-400");
-                toastIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>`;
+
+            if (type === 'loading') {
+                toastIcon.className = 'flex items-center justify-center w-5 h-5 flex-shrink-0 text-white';
+                toastIcon.innerHTML = iosSpinner(18);
+            } else if (type === 'success') {
+                toastIcon.className = 'flex items-center justify-center w-5 h-5 flex-shrink-0 text-green-400';
+                toastIcon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
             } else {
-                toastIcon.classList.remove("text-green-400");
-                toastIcon.classList.add("text-yellow-400", "animate-spin");
-                toastIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>`;
+                toastIcon.className = 'flex items-center justify-center w-5 h-5 flex-shrink-0 text-red-400';
+                toastIcon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
             }
 
             toast.classList.remove("opacity-0", "translate-y-4");
             toast.classList.add("opacity-100", "translate-y-0");
-            
+
+            if (type === 'loading') return; // keep visible while loading
+
             toastTimeout = setTimeout(() => {
                 toast.classList.remove("opacity-100", "translate-y-0");
                 toast.classList.add("opacity-0", "translate-y-4");
