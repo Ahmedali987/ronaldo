@@ -245,8 +245,8 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center space-x-2 translate-y-4 whitespace-nowrap">
+    <!-- Toast Notification (moved up to bottom-32 so it does not overlap Android's native copy toast) -->
+    <div id="toast" class="fixed bottom-32 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center space-x-2 translate-y-4 whitespace-nowrap">
         <span id="toastIcon" class="flex items-center justify-center w-5 h-5 flex-shrink-0"></span>
         <span id="toastMessage" class="font-medium">Copied!</span>
     </div>
@@ -269,6 +269,7 @@
         let toastTimeout;
         let isLoading = false;
         let lastUpdatedValue = null;
+        let loadingDotsTimer = null;
 
         // Custom dropdown instances (created on DOMContentLoaded)
         let numRangeDD, numLimitDD, otpRangeDD, otpLimitDD;
@@ -305,11 +306,29 @@
             return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
+        // Animated "Loading." → "Loading.." → "Loading..." ticker
+        function startLoadingDots(el, baseText = 'Loading') {
+            stopLoadingDots();
+            let count = 0;
+            el.textContent = baseText;
+            loadingDotsTimer = setInterval(() => {
+                count = (count + 1) % 4; // 0,1,2,3 → '', '.', '..', '...'
+                el.textContent = baseText + '.'.repeat(count);
+            }, 400);
+        }
+
+        function stopLoadingDots() {
+            if (loadingDotsTimer) {
+                clearInterval(loadingDotsTimer);
+                loadingDotsTimer = null;
+            }
+        }
+
         // Formats an ISO / timestamp string for display under the title
         function formatLastUpdated(value) {
-            if (!value) return 'Not set';
+            if (!value) return 'Unavailable';
             const d = new Date(value);
-            if (isNaN(d.getTime())) return String(value);
+            if (isNaN(d.getTime())) return 'Unavailable';
             return d.toLocaleString(undefined, {
                 day: '2-digit',
                 month: 'short',
@@ -324,15 +343,19 @@
         // =====================================================================
         async function fetchLastUpdated() {
             const el = document.getElementById('lastUpdatedText');
-            el.textContent = 'Loading...';
+            startLoadingDots(el, 'Loading');
+
             try {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/web_settings?id=eq.1&select=last_updated`, { headers });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const rows = await res.json();
                 lastUpdatedValue = (rows && rows[0]) ? rows[0].last_updated : null;
+
+                stopLoadingDots();
                 el.textContent = formatLastUpdated(lastUpdatedValue);
             } catch (err) {
                 console.error('Failed to load last updated timestamp:', err);
+                stopLoadingDots();
                 el.textContent = 'Unavailable';
             }
         }
