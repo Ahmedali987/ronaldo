@@ -263,6 +263,20 @@
             });
         });
 
+        // =====================================================================
+        // LOADING SPINNER LOGIC
+        // =====================================================================
+        function showTableLoader(tbodyId, colspan) {
+            const tbody = document.getElementById(tbodyId);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="${colspan}" class="p-12 text-center align-middle">
+                        <img src="ios style loading spinner.svg" alt="Loading..." class="w-10 h-10 mx-auto animate-spin opacity-60" />
+                    </td>
+                </tr>
+            `;
+        }
+
         async function fetchAllRows(tableName, queryParams = '') {
             let allData = [];
             let limit = 1000;
@@ -287,18 +301,25 @@
 
         async function loadDataFromDatabase() {
             showToast("Updating...");
+            
+            // Show the loading spinner before fetching data
+            showTableLoader('testNumbersTableBody', 3);
+            showTableLoader('inboundTableBody', 4);
 
             try {
                 adminUploadedNumbers = await fetchAllRows('web_numbers', 'select=*');
                 receivedOTPs = await fetchAllRows('web_otps', 'select=*&order=date.desc');
 
                 populateRangeDropdowns();
+                // Rendering functions automatically clear the spinner before inserting rows
                 renderNumbers();
                 renderInbounds();
                 showToast("Updated");
             } catch (error) {
                 console.error("Database error:", error);
                 showToast("Update failed", false);
+                document.getElementById('testNumbersTableBody').innerHTML = `<tr><td colspan="3" class="p-6 text-center text-red-500 font-medium">Failed to load data</td></tr>`;
+                document.getElementById('inboundTableBody').innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500 font-medium">Failed to load data</td></tr>`;
             }
         }
 
@@ -434,14 +455,10 @@
             container.innerHTML = '';
             if (totalPages <= 1) return;
 
-            // Calculate safe available width for page number buttons.
-            // Reserve ~320px for First, Prev, Next, Last buttons to prevent cutoffs.
             const containerWidth = container.parentElement.clientWidth || window.innerWidth;
             const availableWidth = containerWidth - 320;
-            // 45px per button covers larger 3-to-4 digit numbers safely
             const maxVisible = Math.max(3, Math.floor(availableWidth / 45));
 
-            // First & Prev buttons (Always rendered, disabled if on first page)
             const prevDisabled = currentPage === 1 ? 'disabled' : '';
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage > 1 ? callbackFn + '(1)' : 'return false;'}" class="page-btn" ${prevDisabled}>First</button>`);
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage > 1 ? callbackFn + '(' + (currentPage - 1) + ')' : 'return false;'}" class="page-btn" ${prevDisabled}>Previous</button>`);
@@ -459,7 +476,6 @@
                 container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${i})" class="page-btn ${isActive ? 'active' : ''}">${i}</button>`);
             }
 
-            // Next & Last buttons (Always rendered, disabled if on last page)
             const nextDisabled = currentPage === totalPages ? 'disabled' : '';
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage < totalPages ? callbackFn + '(' + (currentPage + 1) + ')' : 'return false;'}" class="page-btn" ${nextDisabled}>Next</button>`);
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage < totalPages ? callbackFn + '(' + totalPages + ')' : 'return false;'}" class="page-btn" ${nextDisabled}>Last</button>`);
