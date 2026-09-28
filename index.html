@@ -21,6 +21,12 @@
         .nowrap-table table { table-layout: auto; width: max-content; min-width: 100%; }
         .nowrap-table td, .nowrap-table th { white-space: nowrap !important; }
 
+        /* Sort icon shown next to column titles */
+        .sort-icon {
+            display: inline-block; width: 12px; height: 12px; margin-left: 5px;
+            vertical-align: -1px; color: #94a3b8; flex-shrink: 0;
+        }
+
         .page-btn {
             padding: 6px 12px; border: 1px solid #d1d5db; background: linear-gradient(to bottom, #ffffff 0%, #f3f4f6 100%);
             color: #374151; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
@@ -34,28 +40,15 @@
 
         /* =====================================================================
            iOS STYLE ACTIVITY INDICATOR (12 fading ticks)
-           Color follows the parent's text color (currentColor).
-           Size is controlled with the --s CSS variable.
            ===================================================================== */
         .ios-spinner {
-            position: relative;
-            display: inline-block;
-            width: var(--s, 20px);
-            height: var(--s, 20px);
-            flex-shrink: 0;
+            position: relative; display: inline-block;
+            width: var(--s, 20px); height: var(--s, 20px); flex-shrink: 0;
         }
         .ios-spinner i {
-            position: absolute;
-            left: 50%;
-            top: 0;
-            width: 8%;
-            height: 26%;
-            margin-left: -4%;
-            border-radius: 50px;
-            background: currentColor;
-            opacity: 0.15;
-            transform-origin: 50% 192%;
-            animation: ios-fade 1s linear infinite;
+            position: absolute; left: 50%; top: 0; width: 8%; height: 26%; margin-left: -4%;
+            border-radius: 50px; background: currentColor; opacity: 0.15;
+            transform-origin: 50% 192%; animation: ios-fade 1s linear infinite;
         }
         .ios-spinner i:nth-child(1)  { transform: rotate(0deg);   animation-delay: -1s; }
         .ios-spinner i:nth-child(2)  { transform: rotate(30deg);  animation-delay: -0.9167s; }
@@ -69,12 +62,54 @@
         .ios-spinner i:nth-child(10) { transform: rotate(270deg); animation-delay: -0.25s; }
         .ios-spinner i:nth-child(11) { transform: rotate(300deg); animation-delay: -0.1667s; }
         .ios-spinner i:nth-child(12) { transform: rotate(330deg); animation-delay: -0.0833s; }
-        @keyframes ios-fade {
-            0%   { opacity: 1; }
-            100% { opacity: 0.15; }
-        }
+        @keyframes ios-fade { 0% { opacity: 1; } 100% { opacity: 0.15; } }
 
         #refreshBtn:disabled { opacity: 0.85; cursor: wait; }
+
+        /* =====================================================================
+           CUSTOM DROPDOWN (replaces native <select>, looks the same everywhere)
+           ===================================================================== */
+        .dd { position: relative; min-width: 0; }
+        .dd-btn {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            width: 100%; padding: 8px 12px; font-size: 14px; line-height: 1.25rem;
+            color: #1f2937; text-align: left; background: #fff;
+            border: 1px solid #d1d5db; border-radius: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            cursor: pointer; transition: border-color .15s, box-shadow .15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .dd-btn:focus { outline: none; }
+        .dd-btn:focus-visible, .dd.open .dd-btn {
+            border-color: #06b6d4; box-shadow: 0 0 0 3px rgba(6,182,212,0.15);
+        }
+        .dd-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .dd-chev { width: 16px; height: 16px; color: #94a3b8; flex-shrink: 0; transition: transform .2s ease; }
+        .dd.open .dd-chev { transform: rotate(180deg); color: #06b6d4; }
+
+        .dd-panel {
+            position: absolute; left: 0; top: calc(100% + 6px); z-index: 40;
+            min-width: 100%; width: max-content; max-width: min(340px, 88vw);
+            max-height: 260px; overflow-y: auto; overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            padding: 4px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+            box-shadow: 0 12px 28px -6px rgba(0,0,0,0.18), 0 6px 10px -6px rgba(0,0,0,0.1);
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transform: translateY(-4px) scale(0.98); transform-origin: top left;
+            transition: opacity .15s ease, transform .15s ease, visibility .15s;
+        }
+        .dd.open .dd-panel { opacity: 1; visibility: visible; pointer-events: auto; transform: none; }
+        .dd.up .dd-panel { top: auto; bottom: calc(100% + 6px); transform-origin: bottom left; transform: translateY(4px) scale(0.98); }
+        .dd.up.open .dd-panel { transform: none; }
+
+        .dd-item {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 10px 10px; font-size: 14px; color: #374151; border-radius: 6px;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+        }
+        .dd-item:hover { background: #f1f5f9; }
+        .dd-item.selected { background: #ecfeff; color: #0e7490; font-weight: 600; }
+        .dd-check { width: 16px; height: 16px; flex-shrink: 0; color: #06b6d4; }
     </style>
 </head>
 <body class="bg-gray-200 text-gray-800 font-sans pb-10 min-h-screen">
@@ -88,7 +123,7 @@
     <div class="w-full space-y-6 mt-4">
 
         <!-- SECTION 1: TEST NUMBERS -->
-        <div class="bg-white shadow-md border-y border-gray-300 overflow-hidden">
+        <div class="bg-white shadow-md border-y border-gray-300">
             <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex flex-wrap justify-between items-center gap-2">
                 <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Test Numbers</h2>
                 <div id="numTotalBadge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded border border-cyan-300 shadow-sm">Total: 0</div>
@@ -102,18 +137,11 @@
                     </div>
                     <div class="flex items-center space-x-2 w-full sm:w-auto">
                         <label class="font-semibold text-gray-700 text-sm">Range:</label>
-                        <select id="numRangeFilter" class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-48 focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
-                            <option value="All">-- Show All Ranges --</option>
-                        </select>
+                        <div id="numRangeFilter" class="w-full sm:w-48 min-w-0"></div>
                     </div>
                     <div class="flex items-center space-x-2">
                         <label class="font-semibold text-gray-700 text-sm">Show:</label>
-                        <select id="numLimit" class="border border-gray-300 rounded px-2 py-2 text-sm focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
-                            <option value="0">0</option>
-                            <option value="25" selected>25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
+                        <div id="numLimit" class="w-24"></div>
                     </div>
                 </div>
 
@@ -121,9 +149,9 @@
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr>
-                                <th class="p-3 border-r border-gray-200 w-2/5">Range ↕</th>
-                                <th class="p-3 border-r border-gray-200 w-1/5">Prefix ↕</th>
-                                <th class="p-3 w-2/5">Test Number ↕</th>
+                                <th class="p-3 border-r border-gray-200 w-[38%]">Range<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th class="p-3 border-r border-gray-200 w-[24%]">Prefix<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th class="p-3 w-[38%]">Test Number<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
                             </tr>
                         </thead>
                         <tbody id="testNumbersTableBody"></tbody>
@@ -140,7 +168,7 @@
         </div>
 
         <!-- SECTION 2: RECENT INBOUND -->
-        <div class="bg-white shadow-md border-y border-gray-300 overflow-hidden">
+        <div class="bg-white shadow-md border-y border-gray-300">
             <div class="bg-gray-100 border-b border-gray-300 px-4 py-3 flex flex-wrap justify-between items-center gap-2">
                 <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Recent Inbound</h2>
                 <div class="flex items-center space-x-2">
@@ -161,18 +189,11 @@
                     </div>
                     <div class="flex items-center space-x-2 w-full sm:w-auto">
                         <label class="font-semibold text-gray-700 text-sm">Range:</label>
-                        <select id="otpRangeFilter" class="border border-gray-300 rounded px-3 py-2 text-sm w-full sm:w-48 focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
-                            <option value="All">-- Show All Ranges --</option>
-                        </select>
+                        <div id="otpRangeFilter" class="w-full sm:w-48 min-w-0"></div>
                     </div>
                     <div class="flex items-center space-x-2">
                         <label class="font-semibold text-gray-700 text-sm">Show:</label>
-                        <select id="otpLimit" class="border border-gray-300 rounded px-2 py-2 text-sm focus:outline-none focus:border-cyan-500 shadow-sm bg-white">
-                            <option value="0">0</option>
-                            <option value="25" selected>25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
+                        <div id="otpLimit" class="w-24"></div>
                     </div>
                 </div>
 
@@ -180,10 +201,10 @@
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr>
-                                <th class="p-3 border-r border-gray-200">Date ↕</th>
-                                <th class="p-3 border-r border-gray-200">Range ↕</th>
-                                <th class="p-3 border-r border-gray-200">Number ↕</th>
-                                <th class="p-3">CLI ↕</th>
+                                <th class="p-3 border-r border-gray-200">Date<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th class="p-3 border-r border-gray-200">Range<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th class="p-3 border-r border-gray-200">Number<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
+                                <th class="p-3">CLI<svg class="sort-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4"/><path d="M16 15l-4 4-4-4"/></svg></th>
                             </tr>
                         </thead>
                         <tbody id="inboundTableBody"></tbody>
@@ -223,6 +244,105 @@
         let otpCurrentPage = 1;
         let toastTimeout;
         let isLoading = false;
+
+        // Custom dropdown instances (created on DOMContentLoaded)
+        let numRangeDD, numLimitDD, otpRangeDD, otpLimitDD;
+
+        // =====================================================================
+        // HELPERS
+        // =====================================================================
+        function escapeHtml(str) {
+            return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // =====================================================================
+        // CUSTOM DROPDOWN COMPONENT
+        // =====================================================================
+        class Dropdown {
+            constructor(id, onChange) {
+                this.root = document.getElementById(id);
+                this.onChange = onChange;
+                this.options = [];
+                this.value = '';
+
+                this.root.classList.add('dd');
+                this.root.innerHTML = `
+                    <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false">
+                        <span class="dd-label"></span>
+                        <svg class="dd-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </button>
+                    <div class="dd-panel" role="listbox"></div>`;
+
+                this.btn = this.root.querySelector('.dd-btn');
+                this.panel = this.root.querySelector('.dd-panel');
+                this.label = this.root.querySelector('.dd-label');
+
+                this.btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.root.classList.contains('open') ? this.close() : this.open();
+                });
+                this.panel.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const item = e.target.closest('.dd-item');
+                    if (item) this.select(parseInt(item.dataset.i, 10));
+                });
+
+                Dropdown.all.push(this);
+            }
+
+            setOptions(options, preferredValue) {
+                this.options = options;
+                const exists = options.some(o => o.value === preferredValue);
+                this.value = exists ? preferredValue : (options.length ? options[0].value : '');
+                this.render();
+            }
+
+            render() {
+                const check = `<svg class="dd-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>`;
+                this.panel.innerHTML = this.options.map((o, i) => {
+                    const selected = o.value === this.value;
+                    return `<div class="dd-item${selected ? ' selected' : ''}" role="option" aria-selected="${selected}" data-i="${i}"><span>${escapeHtml(o.label)}</span>${selected ? check : ''}</div>`;
+                }).join('');
+                const cur = this.options.find(o => o.value === this.value);
+                this.label.textContent = cur ? cur.label : '';
+            }
+
+            select(i) {
+                const opt = this.options[i];
+                if (!opt) return;
+                const changed = opt.value !== this.value;
+                this.value = opt.value;
+                this.render();
+                this.close();
+                if (changed && this.onChange) this.onChange(opt.value);
+            }
+
+            open() {
+                Dropdown.closeAll(this);
+                // Flip upward when there is not enough room below
+                const rect = this.btn.getBoundingClientRect();
+                const spaceBelow = window.innerHeight - rect.bottom;
+                const panelH = Math.min(260, this.panel.scrollHeight + 10);
+                this.root.classList.toggle('up', spaceBelow < panelH + 12 && rect.top > spaceBelow);
+
+                this.root.classList.add('open');
+                this.btn.setAttribute('aria-expanded', 'true');
+
+                const sel = this.panel.querySelector('.selected');
+                if (sel) this.panel.scrollTop = sel.offsetTop - this.panel.clientHeight / 2 + sel.clientHeight / 2;
+            }
+
+            close() {
+                this.root.classList.remove('open');
+                this.btn.setAttribute('aria-expanded', 'false');
+            }
+        }
+        Dropdown.all = [];
+        Dropdown.closeAll = function (except) {
+            Dropdown.all.forEach(d => { if (d !== except) d.close(); });
+        };
+        document.addEventListener('click', () => Dropdown.closeAll());
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') Dropdown.closeAll(); });
 
         // =====================================================================
         // iOS SPINNER HELPER
@@ -337,15 +457,23 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const allRanges = [{ value: 'All', label: '-- Show All Ranges --' }];
+            const limits = [{ value: '0', label: '0' }, { value: '25', label: '25' }, { value: '50', label: '50' }, { value: '100', label: '100' }];
+
+            numRangeDD = new Dropdown('numRangeFilter', () => { numCurrentPage = 1; renderNumbers(); });
+            numLimitDD = new Dropdown('numLimit', () => { numCurrentPage = 1; renderNumbers(); });
+            otpRangeDD = new Dropdown('otpRangeFilter', () => { otpCurrentPage = 1; renderInbounds(); });
+            otpLimitDD = new Dropdown('otpLimit', () => { otpCurrentPage = 1; renderInbounds(); });
+
+            numRangeDD.setOptions(allRanges, 'All');
+            otpRangeDD.setOptions(allRanges, 'All');
+            numLimitDD.setOptions(limits, '25');
+            otpLimitDD.setOptions(limits, '25');
+
             loadDataFromDatabase();
 
-            document.getElementById('numRangeFilter').addEventListener('change', () => { numCurrentPage = 1; renderNumbers(); });
             document.getElementById('numSearchInput').addEventListener('input', () => { numCurrentPage = 1; renderNumbers(); });
-            document.getElementById('numLimit').addEventListener('change', () => { numCurrentPage = 1; renderNumbers(); });
-
-            document.getElementById('otpRangeFilter').addEventListener('change', () => { otpCurrentPage = 1; renderInbounds(); });
             document.getElementById('otpSearchInput').addEventListener('input', () => { otpCurrentPage = 1; renderInbounds(); });
-            document.getElementById('otpLimit').addEventListener('change', () => { otpCurrentPage = 1; renderInbounds(); });
 
             let resizeTimer;
             window.addEventListener('resize', () => {
@@ -382,6 +510,7 @@
 
         async function loadDataFromDatabase() {
             if (isLoading) return;
+            Dropdown.closeAll();
             setLoadingState(true);
             showToast("Updating...", 'loading');
 
@@ -404,27 +533,21 @@
         }
 
         function populateRangeDropdowns() {
-            const rawRanges = [...new Set(adminUploadedNumbers.map(i => i.range))].sort();
-            const numDropdown = document.getElementById('numRangeFilter');
-            numDropdown.innerHTML = '<option value="All">-- Show All Ranges --</option>';
-            rawRanges.forEach(r => {
-                const decoded = decodeRangeName(r);
-                numDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${decoded}</option>`);
-            });
-
-            const rawOtpRanges = [...new Set(receivedOTPs.map(i => i.range))].sort();
-            const otpDropdown = document.getElementById('otpRangeFilter');
-            otpDropdown.innerHTML = '<option value="All">-- Show All Ranges --</option>';
-            rawOtpRanges.forEach(r => {
-                const decoded = decodeRangeName(r);
-                otpDropdown.insertAdjacentHTML('beforeend', `<option value="${r}">${decoded}</option>`);
-            });
+            const buildOptions = (rows) => {
+                const raw = [...new Set(rows.map(i => i.range))].sort();
+                return [{ value: 'All', label: '-- Show All Ranges --' }]
+                    .concat(raw.map(r => ({ value: r, label: decodeRangeName(r) })));
+            };
+            // Keeps the current selection after a refresh if it still exists
+            numRangeDD.setOptions(buildOptions(adminUploadedNumbers), numRangeDD.value);
+            otpRangeDD.setOptions(buildOptions(receivedOTPs), otpRangeDD.value);
         }
 
         function renderNumbers() {
-            const filterRange = document.getElementById('numRangeFilter').value;
+            if (isLoading) return;
+            const filterRange = numRangeDD.value;
             const searchText = document.getElementById('numSearchInput').value.toLowerCase();
-            const limit = parseInt(document.getElementById('numLimit').value);
+            const limit = parseInt(numLimitDD.value);
             const tbody = document.getElementById('testNumbersTableBody');
             tbody.innerHTML = '';
 
@@ -461,7 +584,7 @@
                     <td class="p-3 text-gray-700 border-r border-gray-200">${row.prefix}</td>
                     <td class="p-3 font-bold text-gray-900 cursor-pointer select-none group" onclick="copyToClipboard(this, '${row.number}')">
                         <div class="flex items-center">
-                            <span class="num-text transition-colors duration-200">${row.number}</span>
+                            <span class="num-text">${row.number}</span>
                             <span class="icon-container" data-original='${copySvg}'>${copySvg}</span>
                         </div>
                     </td>
@@ -477,9 +600,10 @@
         window.changeNumPage = function(page) { numCurrentPage = page; renderNumbers(); };
 
         function renderInbounds() {
-            const filterRange = document.getElementById('otpRangeFilter').value;
+            if (isLoading) return;
+            const filterRange = otpRangeDD.value;
             const searchText = document.getElementById('otpSearchInput').value.toLowerCase();
-            const limit = parseInt(document.getElementById('otpLimit').value);
+            const limit = parseInt(otpLimitDD.value);
             const tbody = document.getElementById('inboundTableBody');
             tbody.innerHTML = '';
 
@@ -571,23 +695,20 @@
             loadDataFromDatabase();
         }
 
+        // Only the copy icon turns green (the number text stays as it is)
         function copyToClipboard(element, text) {
             navigator.clipboard.writeText(text).then(() => {
                 const iconContainer = element.querySelector('.icon-container');
-                const numText = element.querySelector('.num-text');
+                if (!iconContainer) return;
 
-                if(iconContainer && numText) {
-                    const originalSvg = iconContainer.getAttribute('data-original');
-                    const checkSvg = `<svg class="w-4 h-4 ml-1.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                const originalSvg = iconContainer.getAttribute('data-original');
+                const checkSvg = `<svg class="w-4 h-4 ml-1.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
 
-                    iconContainer.innerHTML = checkSvg;
-                    numText.style.color = '#10b981';
-
-                    setTimeout(() => {
-                        iconContainer.innerHTML = originalSvg;
-                        numText.style.color = '';
-                    }, 3000);
-                }
+                iconContainer.innerHTML = checkSvg;
+                clearTimeout(iconContainer._resetTimer);
+                iconContainer._resetTimer = setTimeout(() => {
+                    iconContainer.innerHTML = originalSvg;
+                }, 3000);
             }).catch(err => { console.error('Failed to copy: ', err); });
         }
 
