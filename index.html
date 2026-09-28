@@ -31,6 +31,50 @@
         .page-btn:disabled { color: #9ca3af; cursor: not-allowed; background: #f9fafb; }
         .page-btn:first-child { border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
         .page-btn:last-child { border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
+
+        /* =====================================================================
+           iOS STYLE ACTIVITY INDICATOR (12 fading ticks)
+           Color follows the parent's text color (currentColor).
+           Size is controlled with the --s CSS variable.
+           ===================================================================== */
+        .ios-spinner {
+            position: relative;
+            display: inline-block;
+            width: var(--s, 20px);
+            height: var(--s, 20px);
+            flex-shrink: 0;
+        }
+        .ios-spinner i {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 8%;
+            height: 26%;
+            margin-left: -4%;
+            border-radius: 50px;
+            background: currentColor;
+            opacity: 0.15;
+            transform-origin: 50% 192%;
+            animation: ios-fade 1s linear infinite;
+        }
+        .ios-spinner i:nth-child(1)  { transform: rotate(0deg);   animation-delay: -1s; }
+        .ios-spinner i:nth-child(2)  { transform: rotate(30deg);  animation-delay: -0.9167s; }
+        .ios-spinner i:nth-child(3)  { transform: rotate(60deg);  animation-delay: -0.8333s; }
+        .ios-spinner i:nth-child(4)  { transform: rotate(90deg);  animation-delay: -0.75s; }
+        .ios-spinner i:nth-child(5)  { transform: rotate(120deg); animation-delay: -0.6667s; }
+        .ios-spinner i:nth-child(6)  { transform: rotate(150deg); animation-delay: -0.5833s; }
+        .ios-spinner i:nth-child(7)  { transform: rotate(180deg); animation-delay: -0.5s; }
+        .ios-spinner i:nth-child(8)  { transform: rotate(210deg); animation-delay: -0.4167s; }
+        .ios-spinner i:nth-child(9)  { transform: rotate(240deg); animation-delay: -0.3333s; }
+        .ios-spinner i:nth-child(10) { transform: rotate(270deg); animation-delay: -0.25s; }
+        .ios-spinner i:nth-child(11) { transform: rotate(300deg); animation-delay: -0.1667s; }
+        .ios-spinner i:nth-child(12) { transform: rotate(330deg); animation-delay: -0.0833s; }
+        @keyframes ios-fade {
+            0%   { opacity: 1; }
+            100% { opacity: 0.15; }
+        }
+
+        #refreshBtn:disabled { opacity: 0.85; cursor: wait; }
     </style>
 </head>
 <body class="bg-gray-200 text-gray-800 font-sans pb-10 min-h-screen">
@@ -101,9 +145,10 @@
                 <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Recent Inbound</h2>
                 <div class="flex items-center space-x-2">
                     <div id="otpTotalBadge" class="bg-cyan-100 text-cyan-800 text-xs font-bold px-3 py-1 rounded border border-cyan-300 shadow-sm">Total Inbounds: 0</div>
-                    <button onclick="handleRefresh()" class="bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1.5 rounded text-sm font-bold transition flex items-center space-x-1.5 shadow-sm">
-                        <svg id="refreshIcon" class="w-4 h-4 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                        <span>REFRESH</span>
+                    <button id="refreshBtn" onclick="handleRefresh()" class="bg-cyan-500 hover:bg-cyan-600 text-white px-3 py-1.5 rounded text-sm font-bold transition flex items-center space-x-1.5 shadow-sm">
+                        <svg id="refreshIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        <span id="refreshSpinner" class="hidden"></span>
+                        <span id="refreshLabel">REFRESH</span>
                     </button>
                 </div>
             </div>
@@ -157,7 +202,7 @@
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded shadow-lg transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center space-x-2 translate-y-4 whitespace-nowrap">
-        <svg id="toastIcon" class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <span id="toastIcon" class="flex items-center justify-center w-5 h-5 flex-shrink-0"></span>
         <span id="toastMessage" class="font-medium">Copied!</span>
     </div>
 
@@ -177,6 +222,55 @@
         let numCurrentPage = 1;
         let otpCurrentPage = 1;
         let toastTimeout;
+        let isLoading = false;
+
+        // =====================================================================
+        // iOS SPINNER HELPER
+        // =====================================================================
+        function iosSpinner(size = 20) {
+            return `<span class="ios-spinner" style="--s:${size}px">${'<i></i>'.repeat(12)}</span>`;
+        }
+
+        function loadingRow(colspan) {
+            return `<tr><td colspan="${colspan}" class="p-10 text-center text-gray-500">
+                <div class="flex flex-col items-center justify-center space-y-3">
+                    ${iosSpinner(32)}
+                    <span class="text-[13px] font-medium">Loading...</span>
+                </div>
+            </td></tr>`;
+        }
+
+        function setLoadingState(loading) {
+            isLoading = loading;
+
+            const btn = document.getElementById('refreshBtn');
+            const icon = document.getElementById('refreshIcon');
+            const spin = document.getElementById('refreshSpinner');
+            const label = document.getElementById('refreshLabel');
+
+            if (loading) {
+                btn.disabled = true;
+                icon.classList.add('hidden');
+                spin.innerHTML = iosSpinner(16);
+                spin.classList.remove('hidden');
+                spin.classList.add('flex');
+                label.textContent = 'LOADING';
+
+                document.getElementById('testNumbersTableBody').innerHTML = loadingRow(3);
+                document.getElementById('inboundTableBody').innerHTML = loadingRow(4);
+                document.getElementById('numInfo').textContent = 'Loading...';
+                document.getElementById('otpInfo').textContent = 'Loading...';
+                document.getElementById('numPagination').innerHTML = '';
+                document.getElementById('otpPagination').innerHTML = '';
+            } else {
+                btn.disabled = false;
+                spin.classList.add('hidden');
+                spin.classList.remove('flex');
+                spin.innerHTML = '';
+                icon.classList.remove('hidden');
+                label.textContent = 'REFRESH';
+            }
+        }
 
         // =====================================================================
         // ADVANCED RANGE NAME DECODER LOGIC
@@ -257,25 +351,12 @@
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimer);
                 resizeTimer = setTimeout(() => {
+                    if (isLoading) return;
                     if (adminUploadedNumbers.length > 0) renderNumbers();
                     if (receivedOTPs.length > 0) renderInbounds();
                 }, 150);
             });
         });
-
-        // =====================================================================
-        // LOADING SPINNER LOGIC
-        // =====================================================================
-        function showTableLoader(tbodyId, colspan) {
-            const tbody = document.getElementById(tbodyId);
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="${colspan}" class="p-12 text-center align-middle">
-                        <img src="ios style loading spinner.svg" alt="Loading..." class="w-10 h-10 mx-auto animate-spin opacity-60" />
-                    </td>
-                </tr>
-            `;
-        }
 
         async function fetchAllRows(tableName, queryParams = '') {
             let allData = [];
@@ -287,7 +368,7 @@
                 const separator = queryParams ? '&' : '';
                 const url = `${SUPABASE_URL}/rest/v1/${tableName}?${queryParams}${separator}limit=${limit}&offset=${offset}`;
                 const res = await fetch(url, { headers });
-                if (!res.ok) break;
+                if (!res.ok) throw new Error(`Request failed: ${res.status}`);
                 const data = await res.json();
                 allData = allData.concat(data);
                 if (data.length < limit) {
@@ -300,26 +381,25 @@
         }
 
         async function loadDataFromDatabase() {
-            showToast("Updating...");
-            
-            // Show the loading spinner before fetching data
-            showTableLoader('testNumbersTableBody', 3);
-            showTableLoader('inboundTableBody', 4);
+            if (isLoading) return;
+            setLoadingState(true);
+            showToast("Updating...", 'loading');
 
             try {
                 adminUploadedNumbers = await fetchAllRows('web_numbers', 'select=*');
                 receivedOTPs = await fetchAllRows('web_otps', 'select=*&order=date.desc');
 
+                setLoadingState(false);
                 populateRangeDropdowns();
-                // Rendering functions automatically clear the spinner before inserting rows
                 renderNumbers();
                 renderInbounds();
-                showToast("Updated");
+                showToast("Updated", 'success');
             } catch (error) {
                 console.error("Database error:", error);
-                showToast("Update failed", false);
-                document.getElementById('testNumbersTableBody').innerHTML = `<tr><td colspan="3" class="p-6 text-center text-red-500 font-medium">Failed to load data</td></tr>`;
-                document.getElementById('inboundTableBody').innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500 font-medium">Failed to load data</td></tr>`;
+                setLoadingState(false);
+                renderNumbers();
+                renderInbounds();
+                showToast("Update failed", 'error');
             }
         }
 
@@ -455,10 +535,14 @@
             container.innerHTML = '';
             if (totalPages <= 1) return;
 
+            // Calculate safe available width for page number buttons.
+            // Reserve ~320px for First, Prev, Next, Last buttons to prevent cutoffs.
             const containerWidth = container.parentElement.clientWidth || window.innerWidth;
             const availableWidth = containerWidth - 320;
+            // 45px per button covers larger 3-to-4 digit numbers safely
             const maxVisible = Math.max(3, Math.floor(availableWidth / 45));
 
+            // First & Prev buttons (Always rendered, disabled if on first page)
             const prevDisabled = currentPage === 1 ? 'disabled' : '';
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage > 1 ? callbackFn + '(1)' : 'return false;'}" class="page-btn" ${prevDisabled}>First</button>`);
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage > 1 ? callbackFn + '(' + (currentPage - 1) + ')' : 'return false;'}" class="page-btn" ${prevDisabled}>Previous</button>`);
@@ -476,18 +560,15 @@
                 container.insertAdjacentHTML('beforeend', `<button onclick="${callbackFn}(${i})" class="page-btn ${isActive ? 'active' : ''}">${i}</button>`);
             }
 
+            // Next & Last buttons (Always rendered, disabled if on last page)
             const nextDisabled = currentPage === totalPages ? 'disabled' : '';
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage < totalPages ? callbackFn + '(' + (currentPage + 1) + ')' : 'return false;'}" class="page-btn" ${nextDisabled}>Next</button>`);
             container.insertAdjacentHTML('beforeend', `<button onclick="${currentPage < totalPages ? callbackFn + '(' + totalPages + ')' : 'return false;'}" class="page-btn" ${nextDisabled}>Last</button>`);
         }
 
         function handleRefresh() {
-            const refreshIcon = document.getElementById('refreshIcon');
-            refreshIcon.classList.add('-rotate-180');
-            setTimeout(() => {
-                loadDataFromDatabase();
-                refreshIcon.classList.remove('-rotate-180');
-            }, 500);
+            if (isLoading) return;
+            loadDataFromDatabase();
         }
 
         function copyToClipboard(element, text) {
@@ -510,7 +591,13 @@
             }).catch(err => { console.error('Failed to copy: ', err); });
         }
 
-        function showToast(message, isSuccess = true) {
+        // type: 'success' | 'error' | 'loading'
+        // 'loading' shows the iOS spinner and stays visible until replaced.
+        function showToast(message, type = 'success') {
+            // Backward compatibility with old showToast(msg, true/false) calls
+            if (type === true) type = 'success';
+            if (type === false) type = 'error';
+
             const toast = document.getElementById("toast");
             const toastMessage = document.getElementById("toastMessage");
             const toastIcon = document.getElementById("toastIcon");
@@ -518,18 +605,21 @@
             clearTimeout(toastTimeout);
             toastMessage.textContent = message;
 
-            if(isSuccess) {
-                toastIcon.classList.remove("text-yellow-400", "animate-spin");
-                toastIcon.classList.add("text-green-400");
-                toastIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>`;
+            if (type === 'loading') {
+                toastIcon.className = 'flex items-center justify-center w-5 h-5 flex-shrink-0 text-white';
+                toastIcon.innerHTML = iosSpinner(18);
+            } else if (type === 'success') {
+                toastIcon.className = 'flex items-center justify-center w-5 h-5 flex-shrink-0 text-green-400';
+                toastIcon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
             } else {
-                toastIcon.classList.remove("text-green-400");
-                toastIcon.classList.add("text-yellow-400", "animate-spin");
-                toastIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>`;
+                toastIcon.className = 'flex items-center justify-center w-5 h-5 flex-shrink-0 text-red-400';
+                toastIcon.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
             }
 
             toast.classList.remove("opacity-0", "translate-y-4");
             toast.classList.add("opacity-100", "translate-y-0");
+
+            if (type === 'loading') return; // keep visible while loading
 
             toastTimeout = setTimeout(() => {
                 toast.classList.remove("opacity-100", "translate-y-0");
